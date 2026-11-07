@@ -1,5 +1,7 @@
 # Task and category API — phase 4
 
+Phase 5 update: daily complete/PATCH completed now work; daily reopen preserves credit. Task responses include nested streak metadata. Completed includes today's credited daily tasks, and Daily keeps completed-today habits visible. Daily-completion restrictions below describe the earlier phase and are superseded by the [current streak contract](streaks.md).
+
 Use the updated API at http://127.0.0.1:8002/docs. Account registration/login and cookie/CSRF guide: accounts.md. All task/category operations require authenticated session cookie. Mutations additionally require an approved Origin and X-CSRF-Token; task route docs expose this header. Login returns token; GET /api/auth/csrf refreshes access to it. All results are no-store. There are no browser task screens yet.
 
 ## Routes

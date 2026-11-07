@@ -1,5 +1,7 @@
 # Devtreck
 
+Current phase 5: daily completions and streaks are available through the API at http://127.0.0.1:8002/docs. See [daily completion guide](docs/api/streaks.md) for current/best streaks, timezone rules, immutable history and reconciliation. Today excludes credited daily tasks; Daily keeps them visible. Browser habit screens remain phase 7. Earlier phase descriptions below are historical milestones.
+
 Phase 1 foundation: responsive Next.js landing page, FastAPI liveness, validated configuration, isolated PostgreSQL services and quality checks. Accounts and tasks are planned for later phases.
 
 ## Setup
