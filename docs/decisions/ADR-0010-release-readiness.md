@@ -1,0 +1,11 @@
+# ADR0010: Local production proof and conditional zero-budget hosting
+
+Status: local implementation verified; external deployment blocked by remaining provider-access/billing/migration gates.
+
+Package FastAPI and Next with existing dependency locks and immutable base-image digests. Ship Next standalone only for container builds; keep ordinary local builds/start behavior. Use Caddy for loopback HTTPS, same-origin API ingress, headers/body cap and request-free error logs. API/web run as unprivileged users with read-only roots; use a separate one-shot owner-role migration and a restricted runtime DB role. Guard expensive password work with two per-process slots, sanitize unexpected exceptions before the server traceback boundary, and batch daily snapshots.
+
+Prove behavior with existing real-Postgres API/browser regression suites plus release security/query tests, synthetic custom-format backup/restore and a production HTTPS journey. Keep local production-like resources isolated from valuable development data. Serialize outage drills and browser checks. Extend CI without claiming remote success until it actually runs.
+
+Latest user authorization selects Vercel Hobby frontend, Render Free FastAPI and Neon Free, personal use only, free provider subdomains, $0/month. No paid trial/resource/card flow is authorized. Published free limits support a small personal demo, not guaranteed always-on service. Vercel Hobby is invalid if business use returns; Netlify Free is a documented commercial-compatible alternative. Render Free's sleep/restarts and Neon suspension caps are explicit. No Render30-day database is used. See [current plan review](../deployment/FREE-HOSTING.md).
+
+Do not activate external resources until current accounts, billing safeguards, origin/cookie/proxy behavior, secrets and migration approval are verified. Installation alone is not evidence of operational account access. Neon Free read access was verified; Vercel tools and Render workspace operations remain unavailable in this chat despite installed integrations. Keep external deployment BLOCKED, never describe the app as live externally. [Runbook](../deployment/RUNBOOK.md) records exact pending steps and proposed RPO/RTO/retention; these targets are not hosted measurements.

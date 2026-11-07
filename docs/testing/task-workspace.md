@@ -27,3 +27,7 @@ Screenshots/traces use disposable data and remain ignored in apps/web/test-resul
 ## Phase 9 verification
 
 The suite now includes Progress in addition to account/task/productivity journeys. `apps/api/.venv/Scripts/python apps/api/scripts/browser_checks.py progress.spec.ts` runs only the new journey; omit the filename for all seven. API `tests/test_progress.py` verifies exact 50%/12.5% denominator fixtures, empty/unknown coverage, idle daily dates and type conversion, local-midnight/DST focus splitting, immutable reward policy, concurrency/rollback/toggle/backfill/caps/achievements and deletion ownership. Progress browser checks empty/populated state, reload and network recovery, preserved XP after archive, accessible table/landmarks, axe and 360/768/1440 widths. Ignored screenshots are progress-desktop.png and progress-mobile.png.
+
+## Phase 10 integrated release check
+
+Final regular suite remains seven journeys; production Docker HTTPS is a separate additional journey under apps/web/release-tests with playwright.release.config.ts. Follow docs/testing/release-readiness.md and deployment runbook for API security/query checks, synthetic all-table backup/restore, safe logging, TLS/role/header/size checks and sequential API outage/recovery. Never run outage checks concurrently with a browser journey or against live external resources. Final production screenshots copied into ignored root .release-results before the normal suite cleans its test-results directory.

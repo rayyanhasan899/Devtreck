@@ -21,3 +21,15 @@ These are contributions, not claims that all future feature requirements are sat
 | SEC-01/02/03/14 | existing authenticated owner locks; cascades and no XP write endpoint | anonymous401, second-owner empty report, arbitrary XP POST405, account cascades |
 
 API references above are relative to apps/api/app; browser references to apps/web. This updates feature coverage without claiming external deployment, browser matrices or hosted CI.
+
+## Phase 10 final audit contributions
+
+| Requirements | Implementation and evidence |
+|---|---|
+| SEC-01–14, §§15–17 | docs/testing/release-readiness.md private-route matrix maps all groups to existing owner/CSRF/Origin/cascade tests; new test_release verifies anonymous routes, production cookies/docs, safe500 logs, auth resource overload/recovery, batched queries and index capability |
+| NFR-01–08,10–16,18,20–21 | existing account/task/streak/productivity/progress tests and seven browser journeys; batch500 occurrence writes, strict transaction/source invariants, safe errors, centralized client and typed build |
+| NFR-09/17; blueprint42–43 | digest-pinned Docker packaging, restricted role/explicit migration, local Caddy HTTPS, full-row checksum restore drill, runbook/RPO/RTO/retention targets, CI release job and production HTTPS journey |
+| NFR-19 | local Chromium desktop/mobile widths and axe; no unrun Firefox/Safari or hosted matrix claimed |
+| External release / budget | docs/deployment/FREE-HOSTING.md: final personal-only Vercel+Render+Neon $0 decision and published limits; installed integrations, Neon Free read verified, Vercel/Render access/billing/live journey still BLOCKED |
+
+Full code/test paths and actual outcomes are recorded in PHASE-10-REPORT.md. No automatic production migration, external backup scheduler, paid resource or main merge is implied.

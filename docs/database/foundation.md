@@ -27,3 +27,7 @@ Tests cover upgrade/base/head/check, transactional DDL rollback, UoW commit/roll
 ## Phase 9 additions
 
 Revision `8022c27c58ae` adds xp_ledger (unique owner/source keys and nonnegative amounts), achievements (owner/key primary key), eligible_occurrences (owner/task composite cascade, daily uniqueness and partial one-time uniqueness), and insight_days (owner/date coverage). Owner/day indexes support lookups. All tables cascade on account deletion; XP deliberately has no task FK. Applied additive upgrade/check to local development; disposable test suite performs downgrade/base/head round trips and metadata agreement. [Retention and denominator contract](../api/progress.md).
+
+## Phase 10 recovery and privilege boundaries
+
+No new schema revision. Disposable API tests cover base/head round trips; scripts/recovery_drill.py separately upgrades a generated synthetic DB through phase8 and incrementally to head, custom-format dumps/restores to a second generated DB and compares every row/table checksum including migration metadata. Final synthetic restore+verification3.77seconds, zero records lost; not a hosted RTO. Local release migrations use devtreck_owner; runtime devtreck_app lacks superuser/createdb/createrole/schema-create. See deployment runbook for explicit live migration approval, direct TLS Neon connection, backup retention targets and forward-fix/rollback procedure. No production database was changed.

@@ -1,0 +1,44 @@
+# Release-readiness audit and repeatable evidence
+
+Phase10 audits the existing modular monolith; it does not claim external provider uptime or a completed hosted deployment. Source files are under apps/api/app and apps/web/src unless specified. See [runbook](../deployment/RUNBOOK.md) for packaging/recovery and [hosting decision](../deployment/FREE-HOSTING.md) for conditional free deployment.
+
+## Private-route inventory and security
+
+| Route group | Authorization / integrity boundary | Evidence |
+|---|---|---|
+| auth register/login | Public validated inputs, exact mutation Origin, normalized unique email, Argon2, per-address and per-email DB counters | test_accounts.py, production cookie/Origin test, browser accounts |
+| auth csrf/logout, users/me/profile/password/delete | Opaque hashed session, expiry, rechecked owner lock; session-bound CSRF and Origin for mutations; current-password proof for sensitive edits; session revocation | test_accounts.py, test_release.py, accounts.spec.ts |
+| tasks CRUD, complete/reopen/history/streak/reconcile/daily-history | Tasks dependency authenticates owner; repository excludes archives and predicates every ID by owner; transactional immutable source facts | test_tasks.py, test_streaks.py, test_progress.py, tasks.spec.ts |
+| categories CRUD | Owner-scoped IDs, unique owner/name and composite task/category owner constraint, confirmed delete/SET NULL | test_tasks.py, tasks.spec.ts |
+| dashboard and plan/today GET/PUT | Signed-in owner only, local-date computation, eligible-task validation, max3 priorities | test_productivity.py, productivity.spec.ts |
+| task checklist GET/POST/PATCH/DELETE/order | Parent owner lookup, owned item within parent, exact-set ordering, max100, deferred unique positions, no automatic parent completion | test_productivity.py, productivity.spec.ts |
+| focus start/current/history/summary/commands | Owner session lookup, one running/paused unique index, command fingerprint, server intervals/clock, no client elapsed/XP | test_productivity.py, test_progress.py, productivity.spec.ts |
+| progress GET | Owner lock and all source queries scoped by owner; no reward write API; unique source grant and badge constraints; no archived task content in ledger | test_progress.py, progress.spec.ts |
+
+Only health/readiness and registration/login are public in production. Development-only OpenAPI/docs are disabled in production. `test_release.py` checks all private GET shapes anonymously, including task/category/checklist children, and production cookie/CSRF/origin/client-owner rejection. Existing two-account negative tests cover resources and commands across each feature, with foreign IDs returning404 and reports returning only the caller's facts. Empty/missing sessions return401; invalid payloads reveal allowlisted field names without submitted data.
+
+SEC-01–03 are implemented through these owner boundaries; SEC-04 via Argon2id plus two concurrent password-work slots per process (excess returns503 without a partial account); SEC-05 via ignored environment and excluded Docker build contexts; SEC-06/07 via typed forbidding-extra DTOs, bounded query inputs, parameterized SQL and DB constraints; SEC-08/09 via deliberate same-origin browser API routing, no permissive CORS, exact Origin/CSRF and Secure/HttpOnly/SameSiteStrict production cookies; SEC-10 via persistent throttles and guarded auth resource pressure; SEC-11–13 via safe error envelopes/request IDs/no content logging, including proxy error filtering; SEC-14 via account cascades and explicit private archive/minimal XP retention.
+
+The local Caddy ingress ignores untrusted forwarding headers and Uvicorn trusts it only on the non-published container network. The prepared Render override uses `--no-proxy-headers`; do not trust arbitrary public forwarding headers. Cross-host Vercel/Render cookie, forwarding/rate identity and timeout behavior remain live preflight gates. Local HTTPS was checked against the exported public private-CA root; browser test's certificate exception is isolated to its loopback context.
+
+## Performance and query audit
+
+Task list limits25 and100 return equal SELECT counts in a real HTTP/SQLAlchemy test seeded with120 daily tasks/facts: completion/streak/checklist rendering uses batched queries rather than one SELECT per row. Lists/history retain established pagination/caps. A PostgreSQL EXPLAIN with sequential scans disabled confirms the owner/archive predicate can use an index; this is an index capability check on a small fixture, not a claim that the production planner always selects it or a load benchmark.
+
+Owner/status/date indexes, unique source/badge keys, daily history/task indexes, focus session/interval owner indexes and occurrence/XP owner/date indexes remain. Snapshot inserts formerly issued one write per task/date; phase10 batches them in groups of500 while preserving conflict/idempotency rules. Reward backfill still scales with unawarded sources and report computation with owner history; exceptionally large histories need measured incremental aggregates, not a claimed fixed latency. No production load benchmark or numerical uptime/latency SLA is asserted.
+
+NFR-01–04: batched/paginated normal list behavior, no full-page routine CRUD, bounded public lists; NFR-05–08: server-confirmed writes/error states, retry/concurrency/rollback source tests; NFR-09: synthetic dump/restore and proposed backup objectives/runbook, with actual external scheduling pending; NFR-10–13: existing responsive/keyboard/axe journeys and semantic Progress table; NFR-14–16: layered services/domain/repositories/DTOs, centralized API client, typed errors and consistent formatting; NFR-17/18: reproducible documented commands and automated suites; NFR-19: Chromium desktop/mobile viewport evidence, not an unrun Firefox/Safari matrix; NFR-20/21: external config, UTC timestamps/IANA boundaries and DST/zone fixtures.
+
+## Commands and CI
+
+From apps/api: venv Python `-m pytest`, `-m ruff check .`, `-m ruff format --check .`, `-m mypy app`, `-m pip check`. From root: API venv Python `-m ruff check scripts` and `-m ruff format --check scripts`. From apps/web: `npm run lint`, `npm run typecheck`, `npm run build`. From apps/api: `.venv/Scripts/python scripts/browser_checks.py` invokes all seven Playwright journeys using isolated generated PostgreSQL and temporary services. Linux uses its installed Python.
+
+Follow runbook build/up first; then **sequentially**, root `scripts/recovery_drill.py`, root `scripts/release_checks.py`, then web `npx playwright test --config playwright.release.config.ts`. The release checks intentionally stop the API; running browser verification concurrently with that outage creates expected failures and is not a valid acceptance run. Do not share the synthetic release DB with valuable data.
+
+`.github/workflows/quality.yml` retains PostgreSQL API/migration, frontend lint/type/build and disposable browser jobs, and adds a Linux Docker release job: generated ignored credentials, build/health-gated up, recovery drill, TLS/proxy/role/outage checks, production browser journey, cleanup. Job time budget25minutes; concurrency cancels superseded branch runs. Failed browser artifacts contain synthetic accounts only. The workflow is committed; hosted CI has not been run/pushed in this phase.
+
+Normal journeys verify account lifecycle, tasks/categories/habits/streak history, planning/checklists/focus recovery across tabs, Progress/XP/rates, loading/empty/network error states and mobile/tablet/desktop widths. The separate production HTTPS journey covers secure cookies, task/habit/checklist records, plan, focus pause/reload/stop, XP/axe/mobile, Origin/CSRF rejection and confirmed account deletion. It does not fast-forward actual hosted timers or prove free-provider cold-start behavior.
+
+## Remaining limitations
+
+Historical unknown completion-rate denominators, delayed natural focus materialization and other phase9 policies remain deliberate. External notifications/password recovery/custom recurrence remain optional deferred features; no unfinished enabled provider controls imply delivery. Existing pre-phase10 password minimum edits remain unstaged; test/container evidence uses that shared working tree. Resolve/commit their intended policy before live release. Actual provider deployment, secret/billing checks, external backup schedule and hosted browser tests remain blocked until access/preflight approval is complete. See final phase report for actual outcomes and failures rather than treating this checklist as evidence of a run.

@@ -1,0 +1,68 @@
+# Phase10 report — hardening and release readiness
+
+Date:2026-11-07, Asia/Karachi. **Local readiness: PASS WITH KNOWN LIMITATIONS. External deployment: BLOCKED.** The local code/packaging/verification boundary is complete. No hosted release, production migration, paid resource or external backup schedule is claimed.
+
+## Scope, requirements and user decisions
+
+Audited SEC-01–14, NFR-01–21 and requirements15–17/blueprint42–43 against existing account/task/streak/planning/focus/reward code and earlier evidence. The submitted phase prompt was executed within the user's request; source requirements govern behavior and blueprint examples remain guidance. Detailed requirement-to-code/test mapping and private-route matrix: docs/testing/release-readiness.md and docs/architecture/phase-01-traceability.md.
+
+User selected Vercel Hobby frontend, Render Free FastAPI only, Neon Free PostgreSQL, free subdomains and strict $0/month. A later statement mentioning business use was superseded by the final explicit **personal-use-only for now** decision, so Vercel Hobby is eligible on that basis. Commercial use must be reconsidered before changing purpose; Netlify Free was reviewed as an alternative. No paid tier, paid trial/card-required flow, custom domain or usage-based spending is authorized.
+
+Official plan/compatibility sources were checked and linked in docs/deployment/FREE-HOSTING.md. Free-tier sleep/quotas/suspensions are explicit; no always-on production SLA. Current Neon live documentation lists1GB/project, while older cached summaries say0.5GB; the guide records the discrepancy and a conservative operating ceiling. Account-specific confirmation remains part of deployment preflight, not inferred from public pricing.
+
+## Delivered changes
+
+- API: bounded concurrent Argon2 hashing/verification (two operations per process; safe503 without partial registration), sanitized unexpected failures before Uvicorn traceback logging, request IDs/no-store preserved on500 and nosniff headers. Existing cookies, Origin/CSRF, ownership, source uniqueness and cascades retained. Daily eligibility inserts now batch500 rather than one write per task/date.
+- Packaging: digest-pinned multi-stage Python/Next Dockerfiles and secret-excluding contexts; standalone output only in container builds; ordinary Windows build/start remains. Local HTTPS Caddy proxy with128KB request cap, security headers, no request objects in error logs, API upstream connection reuse disabled and bounded connection/header timeouts.
+- Isolated release Compose project: only loopback8443 exposed; non-root/read-only API/web, private DB/API/web network, health gating, one-shot owner-role migration, restricted app role, init, shutdown grace and restart policies. Existing development/test database services and data remain separate. No new schema revision; head remains8022c27c58ae.
+- Repeatable helpers: exclusive ignored credential generation, synthetic clean/incremental migration + pg_dump/restore drill and TLS/proxy/role/outage/log checks. Generated DB names are validated; only the helper's own databases/dump are removed.
+- CI: existing real PostgreSQL API/migration, web lint/type/build and isolated browser jobs retained. Added Linux Docker release job with readiness, recovery, TLS/security/outage and production browser journey, with cleanup and branch concurrency. It is committed but **not run on hosted CI**.
+- Prepared render.yaml: explicit Free Docker service, no Render database/disk, auto-deploy off, runtime secrets unset for secure configuration, no publicly trusted forwarded headers. Not submitted to Render and no service created.
+
+Created .gitattributes; API/web Dockerfiles and .dockerignore files; deploy/Caddyfile, compose.release.yaml, init-app-role.sh; render.yaml; scripts/release_env.py, recovery_drill.py, release_checks.py; API tests/test_release.py; web playwright.release.config.ts and release-tests/release.spec.ts; ADR0010; deployment/runbook/free-hosting and testing audit docs; this report. Modified .gitignore/CI, API security/main/accounts/progress persistence+service, Next config, README, assumptions, setup/database/API/testing/traceability docs. No files deleted. The three earlier password-policy source edits remain unstaged and excluded from phase commits.
+
+## Actual verification
+
+Working directory `D:\RAYYAN\Projects\Devtreck\apps\api`, venv Python:
+
+- `python -m pytest`: **73 passed in109.92s**, including five release-specific tests. Real isolated PostgreSQL; no skipped acceptance tests. Existing fixture covers clean head, base/head round trip, transactional DDL and metadata agreement.
+- `python -m ruff check .`: all checks passed. `python -m ruff format --check .`:54 files formatted. `python -m mypy app`: no issues in45 source files. `python -m pip check`: no broken requirements. Scripts separately pass root `apps/api/.venv/Scripts/python -m ruff check scripts` and format check (3files).
+- Final `python scripts/browser_checks.py`: **7 passed in58.4seconds**, after final authentication hardening. Account lifecycle/privacy, task/category/habit/streak, planning/checklist/focus recovery, Progress/XP, error recovery, responsive and accessibility journeys. The runner invokes Playwright against generated disposable DB and temporary services; own resources cleaned.
+
+Working directory `D:\RAYYAN\Projects\Devtreck\apps\web`: `npm run lint`, `npm run typecheck`, `npm run build` passed. Changed frontend/release test files pass Prettier check. Normal production build includes all protected routes; separate Linux Docker standalone build also passed. npm ci's built-in audit reported0 vulnerabilities, which is not a comprehensive security scan. It emitted an ESLint9 deprecation notice; tooling remains pinned/working, with a future upgrade requiring compatibility testing.
+
+Working directory repository root:
+
+- `python scripts/release_env.py`: generated ignored local credentials without printing values; refuses overwrite by design.
+- `docker compose --env-file deploy/.env.release -f deploy/compose.release.yaml build`: API/web builds passed using pinned base digests and existing locks. No env files copied into images.
+- `docker compose ... up -d --wait`: DB, migration one-shot, API, web and proxy health gates passed. Long-running services healthy after verification.
+- `apps/api/.venv/Scripts/python scripts/recovery_drill.py`: final **PASS**, clean baseline through phase8 then incremental head, metadata checks, custom-format dump and new-DB restore. All18 tables populated/checked including type-change audit, sessions, focus intervals, plans, occurrences, XP and achievements; every full-row checksum matches. **0 synthetic records lost; restore+verification3.77seconds.** Both generated databases and temporary dump cleaned; actual source/recovery content was synthetic, not a development/production dump.
+- `apps/api/.venv/Scripts/python scripts/release_checks.py`: final **PASS** with private-CA TLS verification,128KB rejection413, anonymous/no-store/nosniff/HSTS, spoofed forwarding headers unable to change throttling identity, non-root apps/no env file, restricted runtime role and deliberate API stop502/recovery200. Synthetic query/header marker omitted from proxy error logs. Restricted role check shows no superuser/createdb/createrole/schema-create privileges.
+- From apps/web `npx playwright test --config playwright.release.config.ts`: final **1 passed in11.7seconds** against the final production HTTPS stack. UI signup/login, Secure/HttpOnly/SameSiteStrict cookie, task/habit/checklist records, plan navigation, focus pause/reload/stop,15XP, axe0violations,360px overflow check, Origin/CSRF rejection and confirmed account deletion. Normal suite provides768/1440 and broader CRUD coverage. Desktop/mobile production screenshots visually inspected and copied to ignored root .release-results before the normal suite cleaned test-results.
+- Caddy configuration validated. Local Docker DB/runtime role and image process UID checked. HTTP smoke of ordinary production web/API retained200login/readiness, private401 and protected-login redirect. Ordinary local servers refreshed after code/build changes.
+
+Query test seeded120 daily tasks/facts and confirmed equal SELECT counts at25/100 returned rows (no list rendering N+1). EXPLAIN with sequential scans disabled confirms owner/archive index usability; not an actual production optimizer/load benchmark. Isolated Argon2 verification in the API container measured0.15seconds during diagnosis; not a free-provider latency guarantee.
+
+Versions: Python3.14.7, Node24.15.0/npm11.12.1, Next16.4.5/React19.3.0, SQLAlchemy2.1.8, PostgreSQL18.6, psycopg-linked libpq18.6, Caddy2.11.9, Docker29.3.1/Compose5.1.1. Python/Node/PostgreSQL/Caddy images pinned by inspected immutable digests. Installed Next standalone documentation read; official Next self-hosting, Docker, Caddy proxy/logging/TLS and provider plan references reviewed before packaging. No application dependency/lock upgrades introduced.
+
+## Failures and resolutions
+
+Lint initially required documenting the intentional broad outer exception boundary; added targeted explanation and passed lint/types. Production test initially expected the navigation label as its heading; corrected to the actual Plan your day heading.
+
+Early browser attempts overlapped an intentional API shutdown/recreation and failed with502/disconnected requests. Verification is now explicitly sequential; the final production and regular journeys pass. Local DB briefly reinitialized/entered recovery during the refresh, causing a generated-DB creation attempt to fail. It recovered; no generated database was left behind. The cause was not established, so resource pressure is not asserted as proven. Retried only after readiness; final dump/restore checksums and all health gates passed. No valuable database reset/downgrade occurred.
+
+Subsequent strict10-second TLS checks exposed delayed login responses after the oversized-body probe. Direct API hashing was fast; disabled API upstream reuse and set bounded transport timeouts, then reran TLS/security/outage and production journey successfully. Root-cause attribution beyond the observed proxy/upstream behavior is not claimed. Caddy's read-only mount correctly rejected an in-container overwrite formatting attempt; formatted via captured output to the repository instead. Configuration validation succeeds.
+
+## External deployment state and exact blockers
+
+All three requested integrations are confirmed **installed**. Neon organization reads succeed: actual plan Free, no projects. Render workspace calls repeatedly return unknown-tool/operation errors; Vercel account operations are not exposed in this chat. Browser fallback failed initializing its assets (system path not found). These are access/tool failures, not evidence that the user's installation failed; do not ask to reinstall everything. No provider resource was created by the agent, no role/secret was retrieved, and no external schema/data was modified.
+
+Remaining actions: restore usable Vercel/Render account operations in a refreshed working connection/session; inspect actual Hobby/Free plans, payment-method/overage state and zero-spend safeguards; confirm private GitHub access/Actions zero-spend budget before pushes; choose actual regions/subdomains; inject secrets securely; approve the reviewed production migration; verify restricted Neon TLS/roles, same-origin proxied cookies, CSRF/origin/ownership, cold-start/SSR timeout and safe logs on real provider URLs. Configure an approved private no-cost backup schedule/location, then run/delete a synthetic hosted account journey. Only then may a live release be recorded. No credentials or payment details should be sent in chat.
+
+The final personal-only user decision makes Vercel Hobby terms eligible. Render Free's sleep/restarts and quota-based suspension can make the app temporarily unavailable; Neon Free also suspends at caps. The architecture can run as a personal preview within those constraints; it is not an always-on business service. No paid workaround was activated. Proposed RPO24hours/RTO60minutes and retention are documented targets, not external measurements or an active backup service.
+
+## Limitations, Git and handover
+
+Local Windows Chromium plus Linux container packaging verified; Firefox/Safari/hosted CI/actual provider deployment not claimed. Analytics still derive owner history and unknown old denominators remain unavailable; optional notifications/recovery/custom recurrence remain deferred. The existing private task archive/XP retention policy is unchanged. Only synthetic screenshots/report data are stored in ignored artifacts. All three pre-existing password-policy files remain unstaged; tests and local images include those working-tree edits. Decide/commit their intended policy before live release so checked-in source and deployed policy match.
+
+Branch `codex/phase-10`. `3d0e052` implements hardening/packaging/helpers/CI; `6b2116b` adds security/query and production browser tests; documentation/runbook/report are the final focused commit. Existing origin retained; no push, PR, main/develop change, merge, history rewrite, remote change or repository visibility change. Local development remains http://127.0.0.1:3000; isolated production-like stack is https://localhost:8443 with a private-CA trust step. Accounts/profile/settings, task/category CRUD/search/filter/history, habits/streaks, plans/priorities, checklists, focus and XP/levels/badges/insights are usable locally. Stop at the phase10 boundary; external release stays BLOCKED until the listed gates are actually satisfied.
