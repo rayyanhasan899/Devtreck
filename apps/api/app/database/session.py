@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 
+import certifi
 from fastapi import Request
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -10,7 +11,11 @@ def build_engine(url: str) -> Engine:
         url,
         pool_pre_ping=True,
         hide_parameters=True,
-        connect_args={"connect_timeout": 3, "options": "-c timezone=UTC"},
+        connect_args={
+            "connect_timeout": 10,
+            "options": "-c timezone=UTC",
+            "sslrootcert": certifi.where(),
+        },
         pool_size=5,
         max_overflow=5,
     )
