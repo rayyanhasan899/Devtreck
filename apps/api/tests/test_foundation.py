@@ -15,7 +15,7 @@ def test_liveness_contract() -> None:
 
 def test_production_rejects_debug() -> None:
     with pytest.raises(ValidationError):
-        Settings(app_env="production", app_debug=True)
+        Settings(app_env="production", allowed_origins=["https://devtreck.example"], app_debug=True)
 
 
 def test_unknown_environment_is_rejected() -> None:
@@ -26,7 +26,11 @@ def test_unknown_environment_is_rejected() -> None:
 def test_production_hides_schema() -> None:
     with TestClient(
         create_app(
-            Settings(app_env="production", database_url="postgresql+psycopg://unused/unused")
+            Settings(
+                app_env="production",
+                allowed_origins=["https://devtreck.example"],
+                database_url="postgresql+psycopg://unused/unused",
+            )
         )
     ) as client:
         assert client.get("/docs").status_code == 404
@@ -42,4 +46,6 @@ def test_database_config_rejects_wrong_driver_and_hides_secret() -> None:
 
 def test_production_requires_database() -> None:
     with pytest.raises(ValidationError):
-        Settings(app_env="production", database_url=None)
+        Settings(
+            app_env="production", allowed_origins=["https://devtreck.example"], database_url=None
+        )
