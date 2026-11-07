@@ -1,0 +1,7 @@
+export default function Loading() {
+  return (
+    <main id="main" className="workspace-main" aria-busy="true">
+      <p role="status">Loading your workspace…</p>
+    </main>
+  );
+}
