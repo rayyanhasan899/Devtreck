@@ -1,5 +1,9 @@
 # Devtreck assumptions register
 
+## Phase 7 updates
+
+A-36: protected Today/All/Daily routes share six-view workspace; 10 tasks per page, bounded histories/categories and expandable filters (recommendation, implemented). A-37: writes require server confirmation before refreshing totals; no optimistic streak/counter changes (recommendation, implemented). A-38: dashboard counts actual completion facts, including reopened first completion; archived task facts excluded from display totals (recommendation, implemented). A-39: timed deadlines entered explicitly in device zone and displayed in account zone; calendar-only dates keep account-day semantics (recommendation, implemented). A-40: native edit/detail/delete/category dialogs with private archive notice and category-uncategorizing confirmation (recommendation, implemented). Optional reminder UI, planning priorities, focus, checklists and rewards remain deferred.
+
 ## Phase 6 updates
 
 A-02 device timezone suggestion now requires explicit Save in Settings; account default remains UTC. A-13 light/dark/system theme now persists in profile. A-32: same-origin Next rewrite to server-only API_ORIGIN, no browser persistent credential storage (recommendation, implemented). A-33: protected server profile checks plus client focus/navigation/minute revalidation catch session revocation (recommendation, implemented). A-34: native deletion confirmation dialog with current password and acknowledgment, only completed Overview/Settings navigation linked (recommendation, implemented). A-35: browser tests use random disposable PostgreSQL database and isolated ports 8010/3100 (recommendation, implemented).

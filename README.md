@@ -1,5 +1,7 @@
 # Devtreck
 
+Current phase 7: [open Devtreck](http://127.0.0.1:3000) to use Today, All tasks, Daily habits and Completed views; create/edit/search/filter/sort tasks, manage categories, complete/reopen one-time tasks, complete daily habits and inspect streak/history. Task and category deletion require confirmation. All account/settings features remain available. Focus, planning priorities, checklists and rewards are later phases. See [task workspace guide](docs/testing/task-workspace.md).
+
 Current phase 6: open http://127.0.0.1:3000 to create an account, sign in, use your protected overview and edit Settings (profile, timezone, theme, email, password and confirmed deletion). Sign out is available on desktop/mobile. Task/habit APIs are available, while their browser screens arrive in phase 7.
 
 Web server-only API_ORIGIN defaults to http://127.0.0.1:8002. Set it before build and at runtime if changing API address; never use a public environment variable for secrets. Keep the API running, then build/start web with `npm run build` and `npm start` from apps/web. Browser /api requests use the same origin as the web page; ALLOWED_ORIGINS on API must include that exact web origin. Local defaults cover localhost:3000 and 127.0.0.1:3000. Production requires HTTPS and explicit origins.
