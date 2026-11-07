@@ -6,22 +6,40 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.domain.errors import ConflictError
+from app.domain.rewards import RewardRules
 from app.domain.streaks import Clock, DailyFact, Streak, calculate, local_day, utc_now
 from app.domain.tasks import TaskQuery
 from app.persistence.models import CategoryModel, CompletionModel, DailyCompletionModel, TaskModel
 from app.persistence.tasks import TasksRepository
 from app.persistence.unit_of_work import SqlUnitOfWork
+from app.services.progress import ProgressService
 
 
 class TasksService:
-    def __init__(self, session: Session, owner: UUID, zone: str, clock: Clock = utc_now) -> None:
+    def __init__(
+        self,
+        session: Session,
+        owner: UUID,
+        zone: str,
+        clock: Clock = utc_now,
+        rules: RewardRules | None = None,
+    ) -> None:
         self.repo = TasksRepository(session, owner)
         self.uow = SqlUnitOfWork(session)
         self.zone = zone
         self.clock = clock
+        self.rules = rules or RewardRules()
+
+    def progress(self) -> ProgressService:
+        return ProgressService(
+            self.repo.session, self.repo.owner, self.zone, self.clock, self.rules
+        )
 
     def commit(self) -> None:
         try:
+            self.zone = self.repo.lock_owner().time_zone
+            self.progress().snapshot()
+            self.progress().sync()
             self.uow.commit()
         except IntegrityError:
             raise ConflictError() from None
@@ -48,6 +66,7 @@ class TasksService:
 
     def update(self, task_id: UUID, changes: dict[str, object]) -> TaskModel:
         self.zone = self.repo.lock_owner().time_zone
+        self.progress().snapshot()
         row = self.repo.task(task_id)
         category_id = changes.get("category_id")
         if isinstance(category_id, UUID):
@@ -139,6 +158,8 @@ class TasksService:
         return row
 
     def delete(self, task_id: UUID) -> None:
+        self.zone = self.repo.lock_owner().time_zone
+        self.progress().snapshot()
         self.repo.task(task_id).deleted_at = self.clock()
         self.commit()
 

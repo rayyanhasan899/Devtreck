@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.errors import ConflictError, NotFoundError
 from app.domain.productivity import active_seconds, interval_overlap
+from app.domain.rewards import RewardRules
 from app.domain.streaks import Clock, local_day, utc_now
 from app.domain.tasks import TaskQuery
 from app.persistence.models import (
@@ -23,20 +24,30 @@ from app.persistence.models import (
 from app.persistence.productivity import ProductivityRepository
 from app.persistence.tasks import TasksRepository
 from app.persistence.unit_of_work import SqlUnitOfWork
+from app.services.progress import ProgressService
 
 
 class ProductivityService:
-    def __init__(self, db: Session, owner: UUID, zone: str, clock: Clock = utc_now) -> None:
+    def __init__(
+        self,
+        db: Session,
+        owner: UUID,
+        zone: str,
+        clock: Clock = utc_now,
+        rules: RewardRules | None = None,
+    ) -> None:
         self.repo = ProductivityRepository(db, owner)
         self.tasks = TasksRepository(db, owner)
         self.uow = SqlUnitOfWork(db)
         self.zone, self.clock = zone, clock
+        self.rules = rules or RewardRules()
 
     def lock(self) -> None:
         self.zone = self.tasks.lock_owner().time_zone
 
     def commit(self) -> None:
         try:
+            ProgressService(self.repo.db, self.repo.owner, self.zone, self.clock, self.rules).sync()
             self.uow.commit()
         except IntegrityError:
             raise ConflictError() from None

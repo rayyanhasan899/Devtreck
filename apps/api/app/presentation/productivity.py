@@ -26,7 +26,9 @@ router = APIRouter(prefix="/api", tags=["productivity"])
 
 
 def service(tasks: Tasks) -> ProductivityService:
-    return ProductivityService(tasks.repo.session, tasks.repo.owner, tasks.zone, tasks.clock)
+    return ProductivityService(
+        tasks.repo.session, tasks.repo.owner, tasks.zone, tasks.clock, tasks.rules
+    )
 
 
 Productivity = Annotated[ProductivityService, Depends(service)]

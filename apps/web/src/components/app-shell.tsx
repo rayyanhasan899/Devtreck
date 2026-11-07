@@ -60,6 +60,12 @@ export function AppShell({
         </Link>
         <p className="nav-caption">YOUR WORKSPACE</p>
         <nav aria-label="Main navigation">
+          <Link
+            href="/app/progress"
+            aria-current={path === "/app/progress" ? "page" : undefined}
+          >
+            Progress
+          </Link>
           <Link href="/app" aria-current={path === "/app" ? "page" : undefined}>
             Today
           </Link>

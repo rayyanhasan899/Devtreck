@@ -281,3 +281,61 @@ class FocusIntervalModel(Base):
     user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     ended_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class XPLedgerModel(Base):
+    __tablename__ = "xp_ledger"
+    __table_args__ = (
+        UniqueConstraint("user_id", "source_kind", "source_id"),
+        CheckConstraint("amount >= 0", name="amount_nonnegative"),
+        Index("ix_xp_owner_day", "user_id", "reward_day"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    source_kind: Mapped[str] = mapped_column(String(12))
+    source_id: Mapped[UUID] = mapped_column()
+    amount: Mapped[int] = mapped_column(Integer)
+    reward_day: Mapped[date] = mapped_column(Date)
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    awarded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    policy: Mapped[str] = mapped_column(String(200))
+
+
+class AchievementModel(Base):
+    __tablename__ = "achievements"
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    key: Mapped[str] = mapped_column(String(30), primary_key=True)
+    earned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class OccurrenceModel(Base):
+    __tablename__ = "eligible_occurrences"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["task_id", "user_id"], ["tasks.id", "tasks.user_id"], ondelete="CASCADE"
+        ),
+        UniqueConstraint("task_id", "kind", "day"),
+        Index(
+            "uq_occurrence_one_time",
+            "task_id",
+            unique=True,
+            postgresql_where=text("kind = 'one_time'"),
+        ),
+        Index("ix_occurrences_owner_day", "user_id", "day"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    task_id: Mapped[UUID] = mapped_column()
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    kind: Mapped[str] = mapped_column(String(12))
+    day: Mapped[date] = mapped_column(Date)
+
+
+class InsightDayModel(Base):
+    __tablename__ = "insight_days"
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    time_zone: Mapped[str] = mapped_column(String(100))

@@ -3,6 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 
+from app.domain.rewards import RewardRules
 from app.domain.streaks import Clock, utc_now
 from app.domain.tasks import TaskQuery
 from app.persistence.models import TaskModel
@@ -39,7 +40,15 @@ def service(
     if mutate and request.headers.get("origin") not in request.app.state.settings.allowed_origins:
         raise HTTPException(403, "Origin rejected")
     _, user = authenticated(request, db, mutate)
-    return TasksService(db, user.id, user.time_zone, clock)
+    config = request.app.state.settings
+    rules = RewardRules(
+        config.reward_task_xp,
+        config.reward_daily_xp,
+        config.reward_focus_xp,
+        config.reward_focus_min_seconds,
+        config.reward_focus_daily_cap,
+    )
+    return TasksService(db, user.id, user.time_zone, clock, rules)
 
 
 Tasks = Annotated[TasksService, Depends(service)]
