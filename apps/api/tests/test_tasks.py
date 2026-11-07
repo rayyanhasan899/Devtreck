@@ -211,7 +211,7 @@ def test_all_views_filters_sorts_pagination_and_local_dates(clients):  # noqa: F
     assert ids("view=upcoming&status=completed") == []
 
 
-def test_type_changes_preserve_history_and_block_daily_completion(clients):  # noqa: F811
+def test_type_changes_preserve_one_time_history_and_daily_completion(clients):  # noqa: F811
     first, _, engine = clients
     headers = account(first)
     task = create(first, headers)
@@ -222,8 +222,8 @@ def test_type_changes_preserve_history_and_block_daily_completion(clients):  # n
         first.patch(path, json={"task_type": "daily"}, headers=headers).json()["status"]
         == "pending"
     )
-    assert first.post(path + "/complete", headers=headers).status_code == 409
-    assert first.patch(path, json={"status": "completed"}, headers=headers).status_code == 409
+    assert first.post(path + "/complete", headers=headers).status_code == 200
+    assert first.patch(path, json={"status": "completed"}, headers=headers).status_code == 200
     assert first.patch(path, json={"task_type": "one-time"}, headers=headers).status_code == 200
     assert first.get(path + "/history").json() == history
     with Session(engine) as db:
