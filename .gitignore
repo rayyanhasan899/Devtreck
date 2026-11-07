@@ -10,3 +10,7 @@ __pycache__/
 !.env.example
 *.tsbuildinfo
 .venv-verify/
+test-results/
+playwright-report/
+
+.browser-services.log
