@@ -1,6 +1,6 @@
 # Devtreck assumptions register
 
-2026-11-07. Proposed means not user-approved. No product implementation has occurred. Resolve material decisions before the affected implementation, while independent work continues.
+2026-11-07. Proposed means not user-approved. Phase 1 foundation is now implemented under the submitted prompt. Resolve material decisions before the affected implementation, while independent work continues.
 
 | ID | Assumption | Why | Source | Impact if wrong | Approval/checkpoint | Status |
 |---|---|---|---|---|---|---|
@@ -18,3 +18,6 @@
 | A-12 | Use apps/web + apps/api, npm and venv; select versions only after compatibility verification | Repository contains no implementation | Architecture guidance + recommendation | Tooling portability | No blocking approval | proposed |
 | A-13 | Slate/teal restrained UI with light/dark/system, semantic components and reduced motion | No branding supplied | Recommendation | Visual direction | No blocking approval | proposed |
 | A-14 | Source files remain at supplied external paths during planning; phase 1 copies reviewed sources into repo after checking duplicates | Planning boundary permits only listed planning outputs | Inference | Fresh-clone portability | No blocking approval | proposed |
+## Phase 1 updates
+
+A-12 implemented with Node 24/Python 3.14 and pinned dependency locks. A-13 applied to landing with system light/dark themes and override tokens; user settings arrive in phase 6. A-14 fulfilled: unchanged source documents copied into checkout. Other product proposals remain proposed. A-15: PostgreSQL 18.6 on loopback 5433/5434 with independent test storage (recommendation, implemented; change if port conflicts). A-16: system fonts avoid network build dependency (recommendation, implemented).
