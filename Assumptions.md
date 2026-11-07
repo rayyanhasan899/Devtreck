@@ -1,5 +1,9 @@
 # Devtreck assumptions register
 
+## Phase 8 updates
+
+A-08 implemented: max3 daily priorities, 25/5 presets, one active/paused session and no automatic task/parent completion. A-41: owner/local-date plan arrays validate against current Today and show at most500 with explicit truncated/missing workload labels (recommendation, implemented). A-42: focus targets persist per session; new form defaults reset after reload, natural completion materialized at calculated deadline on next read (recommendation, implemented). A-43: command-key/fingerprint idempotency and recorded active intervals govern totals; paused/break time excluded (recommendation, implemented). A-44: checklist max100, exact-set atomic reorder, confirmed UI delete and parent progress refresh (recommendation, implemented). A-45: Focus polls every3 seconds, associations offer first100 active tasks plus General; history pages10 in browser (recommendation, implemented). Separate concurrent password-policy source edit is preserved outside phase 8 scope/commits.
+
 ## Phase 7 updates
 
 A-36: protected Today/All/Daily routes share six-view workspace; 10 tasks per page, bounded histories/categories and expandable filters (recommendation, implemented). A-37: writes require server confirmation before refreshing totals; no optimistic streak/counter changes (recommendation, implemented). A-38: dashboard counts actual completion facts, including reopened first completion; archived task facts excluded from display totals (recommendation, implemented). A-39: timed deadlines entered explicitly in device zone and displayed in account zone; calendar-only dates keep account-day semantics (recommendation, implemented). A-40: native edit/detail/delete/category dialogs with private archive notice and category-uncategorizing confirmation (recommendation, implemented). Optional reminder UI, planning priorities, focus, checklists and rewards remain deferred.

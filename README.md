@@ -1,5 +1,7 @@
 # Devtreck
 
+Current phase 8: Daily plan lets you choose three priorities and reorder Today's work with workload estimates. Focus supports configurable focus/break sessions, pause/resume/stop, refresh recovery and history/totals. Task details now contain checklists with progress and keyboard ordering. Existing account/task/habit features remain. See [productivity guide](docs/api/productivity.md). XP/rewards/insights remain phase 9.
+
 Current phase 7: [open Devtreck](http://127.0.0.1:3000) to use Today, All tasks, Daily habits and Completed views; create/edit/search/filter/sort tasks, manage categories, complete/reopen one-time tasks, complete daily habits and inspect streak/history. Task and category deletion require confirmation. All account/settings features remain available. Focus, planning priorities, checklists and rewards are later phases. See [task workspace guide](docs/testing/task-workspace.md).
 
 Current phase 6: open http://127.0.0.1:3000 to create an account, sign in, use your protected overview and edit Settings (profile, timezone, theme, email, password and confirmed deletion). Sign out is available on desktop/mobile. Task/habit APIs are available, while their browser screens arrive in phase 7.
