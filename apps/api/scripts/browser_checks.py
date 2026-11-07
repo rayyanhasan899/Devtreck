@@ -114,7 +114,7 @@ def main() -> int:
             )
             wait("http://127.0.0.1:3100/login")
             return subprocess.run(
-                [node, str(web / "node_modules/@playwright/test/cli.js"), "test"],
+                [node, str(web / "node_modules/@playwright/test/cli.js"), "test", *sys.argv[1:]],
                 cwd=web,
                 env=env,
                 check=False,

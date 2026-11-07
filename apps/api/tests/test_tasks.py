@@ -322,3 +322,46 @@ def test_concurrent_completion_is_single_fact(clients):  # noqa: F811
     with ThreadPoolExecutor(max_workers=2) as pool:
         list(pool.map(finish, range(2)))
     assert len(first.get("/api/tasks/" + task["id"] + "/history").json()) == 1
+
+
+def test_dashboard_authoritative_counts_and_privacy(clients):  # noqa: F811
+    from zoneinfo import ZoneInfo
+
+    first, second, _ = clients
+    headers = account(first)
+    today = datetime.now(ZoneInfo("UTC")).date()
+    once = create(first, headers, due_date=str(today))
+    daily = create(first, headers, title="Daily summary", task_type="daily")
+    summary = first.get("/api/dashboard").json()
+    assert summary == {
+        "today_actionable": 2,
+        "outstanding": 2,
+        "completions_today": 0,
+        "daily_total": 1,
+        "daily_done": 0,
+    }
+    for task in [once, daily]:
+        assert (
+            first.post("/api/tasks/" + task["id"] + "/complete", headers=headers).status_code == 200
+        )
+    summary = first.get("/api/dashboard").json()
+    assert summary == {
+        "today_actionable": 0,
+        "outstanding": 0,
+        "completions_today": 2,
+        "daily_total": 1,
+        "daily_done": 1,
+    }
+    first.post("/api/tasks/" + once["id"] + "/reopen", headers=headers)
+    assert first.get("/api/dashboard").json()["completions_today"] == 2
+    first.delete("/api/tasks/" + once["id"] + "?confirm=true", headers=headers)
+    assert first.get("/api/dashboard").json()["completions_today"] == 1
+    assert second.get("/api/dashboard").status_code == 401
+    account(second)
+    assert second.get("/api/dashboard").json() == {
+        "today_actionable": 0,
+        "outstanding": 0,
+        "completions_today": 0,
+        "daily_total": 0,
+        "daily_done": 0,
+    }
