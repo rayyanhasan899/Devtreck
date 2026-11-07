@@ -23,3 +23,8 @@ Required local development: Git, compatible Node/npm, compatible Python/venv, Po
 | Email / push provider | Optional deferred | Password recovery and external notifications | Not configured or inspected | Do not promise delivery or enable recovery without actual provider and secure configuration | Can integrate later if scoped | Provider choice/login only if selected | Real delivery test in a later optional phase |
 
 Immediate prerequisite: Docker engine is unavailable at the Linux engine named pipe. This indicates no accessible running engine, not proof that Docker is absent. WSL support, virtualization, licensing and production permissions were not verified. No requirement to install anything manually before submitting phase 1; it should diagnose and perform feasible setup first. Source documents are outside the checkout; phase 1 should preserve reviewed copies in-repo.
+
+
+## Phase 9 current setup and release boundary
+
+The preceding planning inventory is historical. Local API/web/database and isolated test harness are operational through phase 9. Apply Alembic head8022c27c58ae from apps/api, keep API8002 running and build/start web3000 as in README. Optional bounded REWARD_* variables live only in API environment; defaults require no configuration. No new package, analytics account or external service is required. Review docs/api/progress.md before changing reward policy; earned entries remain immutable. Production remains unselected: preserve same-origin routing, HTTPS/session settings, explicit origins and server-only reward configuration when preparing phase10. No external deployment, credentials or paid service was used in phase9.

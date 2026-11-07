@@ -1,5 +1,7 @@
 # Devtreck
 
+Current phase 9: [Progress](http://127.0.0.1:3000/app/progress) adds XP, levels, milestone badges, today/seven-date completion rates, focus totals and daily/category insights. Accounts, tasks, habits, daily planning, focus and checklists remain available. Historical rates with unknown denominators explicitly show unavailable. See [Progress rules](docs/api/progress.md). All phase descriptions below record earlier delivery milestones.
+
 Current phase 8: Daily plan lets you choose three priorities and reorder Today's work with workload estimates. Focus supports configurable focus/break sessions, pause/resume/stop, refresh recovery and history/totals. Task details now contain checklists with progress and keyboard ordering. Existing account/task/habit features remain. See [productivity guide](docs/api/productivity.md). XP/rewards/insights remain phase 9.
 
 Current phase 7: [open Devtreck](http://127.0.0.1:3000) to use Today, All tasks, Daily habits and Completed views; create/edit/search/filter/sort tasks, manage categories, complete/reopen one-time tasks, complete daily habits and inspect streak/history. Task and category deletion require confirmation. All account/settings features remain available. Focus, planning priorities, checklists and rewards are later phases. See [task workspace guide](docs/testing/task-workspace.md).
@@ -86,3 +88,7 @@ Registration, login/logout, profile/timezone/theme and email updates, password c
 ## Phase 4: usable task/category APIs
 
 Create, read, update, archive, search, filter and sort private tasks; complete/reopen one-time tasks and view preserved history. Manage custom categories without deleting their tasks. API docs remain http://127.0.0.1:8002/docs after restarting the API. [Task API guide](docs/api/tasks.md) documents fields, cookie/CSRF headers, list views and confirmations. Daily tasks can be created, but completion/streaks arrive in phase 5. Browser task screens arrive in phase 7.
+
+## Phase 9: rewards and insights
+
+Open `/app/progress` from Progress navigation for server-owned XP, levels, four achievement milestones, today/seven-date completion and focus summaries, habit consistency and accessible daily/category activity. Existing history is credited once. Rates remain unavailable for zero or incompletely tracked denominators. See [reward/insight contract](docs/api/progress.md), [ADR](docs/decisions/ADR-0009-rewards-insights.md) and [phase report](docs/phase-reports/PHASE-09-REPORT.md). Prior phase sections describe their historical delivery boundaries; Progress is now implemented. External hosting remains phase 10.

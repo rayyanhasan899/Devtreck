@@ -25,3 +25,7 @@ Daily/week summaries count seconds, browser cards show whole minutes rounded dow
 ## Verification
 
 Run API pytest and the disposable browser runner as documented in testing guides. Focus clock is injectable only through backend test dependencies. Tests advance trusted test time without sleeping for timers, proving pauses, capping, midnight splits, duplicate/concurrent commands, single active session, break exclusion and no parent auto-completion. Browser journey covers persisted planning order/top flags, checklist progress/reorder, focus pause/reload, second-tab resume, stop/history, break start and mobile/axe checks.
+
+## Phase 9 integration
+
+Focus terminal settlement now grants eligible XP in the same transaction. The Progress report excludes associated archived-task sessions from insights and adds reward caps/achievements. Existing `/focus/summary` remains the raw personal focus-work summary, including associated task archives; it predates Progress filtering. See [precise reward and insight rules](progress.md); earlier statements that rewards are deferred describe phase 8 only.
