@@ -58,6 +58,26 @@ class TaskPatch(BaseModel):
         return self
 
 
+class StreakResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    current_streak: int
+    best_streak: int
+    today_completed: bool
+    last_qualified_day: date | None
+    total_completions: int
+    current_day: date
+    time_zone: str
+
+
+class DailyHistoryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: UUID
+    epoch: UUID
+    completion_day: date
+    completed_at: datetime
+    time_zone: str
+
+
 class TaskResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
@@ -72,6 +92,7 @@ class TaskResponse(BaseModel):
     estimated_minutes: int | None
     created_at: datetime
     updated_at: datetime
+    streak: StreakResponse | None = None
 
 
 class TaskPage(BaseModel):

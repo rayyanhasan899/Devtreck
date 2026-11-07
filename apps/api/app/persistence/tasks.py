@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import datetime
+from datetime import date, datetime
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -8,13 +8,75 @@ from sqlalchemy.orm import Session
 
 from app.domain.errors import NotFoundError
 from app.domain.tasks import TaskQuery
-from app.persistence.models import CategoryModel, CompletionModel, TaskModel, TaskTypeChangeModel
+from app.persistence.models import (
+    CategoryModel,
+    CompletionModel,
+    DailyCompletionModel,
+    TaskModel,
+    TaskTypeChangeModel,
+    UserModel,
+)
 
 
 class TasksRepository:
     def __init__(self, session: Session, owner: UUID) -> None:
         self.session = session
         self.owner = owner
+
+    def lock_owner(self) -> UserModel:
+        row = self.session.scalar(
+            select(UserModel)
+            .where(UserModel.id == self.owner)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        if row is None:
+            raise NotFoundError()
+        return row
+
+    def daily_facts(self, ids: Sequence[UUID]) -> Sequence[DailyCompletionModel]:
+        return (
+            self.session.scalars(
+                select(DailyCompletionModel)
+                .where(
+                    DailyCompletionModel.user_id == self.owner,
+                    DailyCompletionModel.task_id.in_(ids),
+                )
+                .order_by(DailyCompletionModel.completed_at, DailyCompletionModel.id)
+            ).all()
+            if ids
+            else []
+        )
+
+    def add_daily(self, row: TaskModel, day: date, instant: datetime, zone: str) -> None:
+        from sqlalchemy.dialects.postgresql import insert
+
+        self.session.execute(
+            insert(DailyCompletionModel)
+            .values(
+                task_id=row.id,
+                user_id=self.owner,
+                epoch=row.daily_epoch,
+                completion_day=day,
+                completed_at=instant,
+                time_zone=zone,
+            )
+            .on_conflict_do_nothing(constraint="uq_daily_task_day")
+        )
+
+    def daily_history(
+        self, task_id: UUID, limit: int, offset: int
+    ) -> Sequence[DailyCompletionModel]:
+        self.task(task_id)
+        return self.session.scalars(
+            select(DailyCompletionModel)
+            .where(
+                DailyCompletionModel.user_id == self.owner, DailyCompletionModel.task_id == task_id
+            )
+            .order_by(DailyCompletionModel.completed_at.desc(), DailyCompletionModel.id)
+            .limit(limit)
+            .offset(offset)
+        ).all()
 
     def task(self, task_id: UUID) -> TaskModel:
         row = self.session.scalar(
@@ -25,6 +87,7 @@ class TasksRepository:
                 TaskModel.deleted_at.is_(None),
             )
             .with_for_update()
+            .execution_options(populate_existing=True)
         )
         if row is None:
             raise NotFoundError()
@@ -35,6 +98,7 @@ class TasksRepository:
             select(CategoryModel)
             .where(CategoryModel.id == category_id, CategoryModel.user_id == self.owner)
             .with_for_update()
+            .execution_options(populate_existing=True)
         )
         if row is None:
             raise NotFoundError()
@@ -94,26 +158,40 @@ class TasksRepository:
         local_date = func.coalesce(
             TaskModel.due_date, cast(func.timezone(zone, TaskModel.due_at), Date)
         )
-        late = and_(
-            TaskModel.status != "completed", or_(TaskModel.due_date < today, TaskModel.due_at < now)
+        daily_done = (
+            select(DailyCompletionModel.id)
+            .where(
+                DailyCompletionModel.task_id == TaskModel.id,
+                DailyCompletionModel.user_id == self.owner,
+                DailyCompletionModel.completion_day == today,
+            )
+            .exists()
         )
+        is_daily = TaskModel.task_type == "daily"
+        finished = or_(and_(~is_daily, TaskModel.status == "completed"), and_(is_daily, daily_done))
+        late = and_(~finished, or_(TaskModel.due_date < today, TaskModel.due_at < now))
         statement = select(TaskModel).where(
             TaskModel.user_id == self.owner, TaskModel.deleted_at.is_(None)
         )
-        if query.view == "completed":
-            statement = statement.where(TaskModel.status == "completed")
-        elif query.view != "all" or query.status != "completed":
-            statement = statement.where(TaskModel.status != "completed")
-        if query.view == "today":
+        if query.view == "completed" or query.status == "completed":
+            statement = statement.where(finished)
+        elif query.view != "daily":
+            # Daily habits stay visible in All, but Today is actionable work only.
             statement = statement.where(
-                or_(local_date == today, late, TaskModel.task_type == "daily")
+                or_(is_daily, ~finished) if query.view == "all" else ~finished
             )
+        if query.view == "today":
+            statement = statement.where(or_(local_date == today, late, is_daily))
         elif query.view == "upcoming":
             statement = statement.where(local_date > today)
         elif query.view == "overdue":
             statement = statement.where(late)
         elif query.view == "daily":
-            statement = statement.where(TaskModel.task_type == "daily")
+            statement = statement.where(is_daily)
+        if query.view in ("upcoming", "today", "overdue") and query.status == "completed":
+            statement = statement.where(~finished)
+        if query.status in ("pending", "in-progress"):
+            statement = statement.where(~finished)
         if query.search:
             pattern = (
                 "%"
@@ -127,7 +205,7 @@ class TasksRepository:
                 )
             )
         for value, column in [
-            (query.status, TaskModel.status),
+            (query.status if query.status != "completed" else None, TaskModel.status),
             (query.task_type, TaskModel.task_type),
             (query.priority, TaskModel.priority),
             (query.category_id, TaskModel.category_id),

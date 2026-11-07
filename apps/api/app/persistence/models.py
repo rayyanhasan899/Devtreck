@@ -108,6 +108,10 @@ class TaskModel(Base):
     due_date: Mapped[date | None] = mapped_column(Date)
     due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     estimated_minutes: Mapped[int | None] = mapped_column(Integer)
+    daily_epoch: Mapped[UUID | None] = mapped_column()
+    current_streak: Mapped[int] = mapped_column(Integer, server_default="0")
+    best_streak: Mapped[int] = mapped_column(Integer, server_default="0")
+    last_qualified_day: Mapped[date | None] = mapped_column(Date)
     daily_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -146,3 +150,22 @@ class TaskTypeChangeModel(Base):
     previous_type: Mapped[str] = mapped_column(String(10))
     next_type: Mapped[str] = mapped_column(String(10))
     changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class DailyCompletionModel(Base):
+    __tablename__ = "daily_completions"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["task_id", "user_id"], ["tasks.id", "tasks.user_id"], ondelete="CASCADE"
+        ),
+        UniqueConstraint("task_id", "completion_day", name="uq_daily_task_day"),
+        Index("ix_daily_owner_time", "user_id", "completed_at"),
+        Index("ix_daily_task_epoch_day", "task_id", "epoch", "completion_day"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    task_id: Mapped[UUID] = mapped_column()
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    epoch: Mapped[UUID] = mapped_column()
+    completion_day: Mapped[date] = mapped_column(Date)
+    time_zone: Mapped[str] = mapped_column(String(100))
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
