@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKey, String, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.base import Base
@@ -13,6 +13,8 @@ class UserModel(Base):
         CheckConstraint(
             "email = lower(btrim(email)) AND length(email) > 0", name="email_normalized"
         ),
+        CheckConstraint("theme IN ('light', 'dark', 'system')", name="theme_valid"),
+        CheckConstraint("length(btrim(name)) > 0", name="name_required"),
     )
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     email: Mapped[str] = mapped_column(String(320), unique=True)
@@ -34,3 +36,10 @@ class SessionModel(Base):
     token_hash: Mapped[str] = mapped_column(String(64), unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+
+
+class RateLimitModel(Base):
+    __tablename__ = "rate_limits"
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    window: Mapped[int] = mapped_column(Integer, index=True)
+    attempts: Mapped[int] = mapped_column(Integer)

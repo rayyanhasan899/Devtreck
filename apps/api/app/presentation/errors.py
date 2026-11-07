@@ -9,12 +9,13 @@ from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
-from app.domain.errors import ApplicationError, ConflictError, NotFoundError
+from app.domain.errors import ApplicationError, ConflictError, NotFoundError, UnauthorizedError
 
 
 class ErrorDetail(BaseModel):
     code: str
     message: str
+    fields: list[str] = []
 
 
 class ErrorResponse(BaseModel):
@@ -36,6 +37,10 @@ def install_errors(app: FastAPI) -> None:
 
     @app.exception_handler(ApplicationError)
     async def application_error(request: Request, exc: ApplicationError) -> JSONResponse:
+        if isinstance(exc, UnauthorizedError):
+            return response(
+                request, 401, "unauthorized", "Authentication or reauthentication required"
+            )
         if isinstance(exc, NotFoundError):
             return response(request, 404, "not_found", "Resource not found")
         if isinstance(exc, ConflictError):
@@ -48,7 +53,40 @@ def install_errors(app: FastAPI) -> None:
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
-        return response(request, 422, "validation_error", "Invalid request data")
+        # Allowlisted field names only; never include submitted input or validator context.
+        fields = [
+            ".".join(
+                str(part)
+                for part in error["loc"]
+                if isinstance(part, int)
+                or part
+                in {
+                    "body",
+                    "email",
+                    "name",
+                    "password",
+                    "new_password",
+                    "current_password",
+                    "theme",
+                    "time_zone",
+                    "confirm",
+                }
+            )
+            for error in exc.errors()
+        ]
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": {
+                    "code": "validation_error",
+                    "message": "Invalid request data",
+                    "fields": fields,
+                },
+                "request_id": request_id,
+            },
+            headers={"X-Request-ID": request_id},
+        )
 
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException) -> JSONResponse:

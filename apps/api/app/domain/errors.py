@@ -12,3 +12,7 @@ class ConflictError(ApplicationError):
 
 class UnavailableError(ApplicationError):
     pass
+
+
+class UnauthorizedError(ApplicationError):
+    pass

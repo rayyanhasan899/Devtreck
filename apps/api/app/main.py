@@ -11,6 +11,7 @@ from starlette.responses import Response
 
 from app.core.config import Settings
 from app.database.session import build_engine
+from app.presentation.accounts import router as accounts_router
 from app.presentation.errors import ErrorResponse, install_errors
 from app.presentation.health import router
 
@@ -37,7 +38,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application = FastAPI(
         lifespan=lifespan,
         responses={
-            code: {"model": ErrorResponse} for code in (400, 401, 403, 404, 409, 422, 500, 503)
+            code: {"model": ErrorResponse} for code in (400, 401, 403, 404, 409, 422, 429, 500, 503)
         },
         title="Devtreck API",
         version="0.1.0",
@@ -46,6 +47,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         redoc_url=None,
         openapi_url=None if config.app_env == "production" else "/openapi.json",
     )
+    application.state.settings = config
+    application.include_router(accounts_router)
     install_errors(application)
 
     @application.middleware("http")
@@ -54,6 +57,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         started = perf_counter()
         response = await call_next(request)
         response.headers["X-Request-ID"] = request.state.request_id
+        if request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
         logging.getLogger("devtreck.requests").info(
             json.dumps(
                 {
