@@ -14,6 +14,7 @@ from app.database.session import build_engine
 from app.presentation.accounts import router as accounts_router
 from app.presentation.errors import ErrorResponse, install_errors
 from app.presentation.health import router
+from app.presentation.tasks import router as tasks_router
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -49,6 +50,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     application.state.settings = config
     application.include_router(accounts_router)
+    application.include_router(tasks_router)
     install_errors(application)
 
     @application.middleware("http")
