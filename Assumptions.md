@@ -21,3 +21,7 @@
 ## Phase 1 updates
 
 A-12 implemented with Node 24/Python 3.14 and pinned dependency locks. A-13 applied to landing with system light/dark themes and override tokens; user settings arrive in phase 6. A-14 fulfilled: unchanged source documents copied into checkout. Other product proposals remain proposed. A-15: PostgreSQL 18.6 on loopback 5433/5434 with independent test storage (recommendation, implemented; change if port conflicts). A-16: system fonts avoid network build dependency (recommendation, implemented).
+
+## Phase 2 updates
+
+A-07 implemented: synchronous request-scoped sessions/routes with explicit commit/rollback. A-17: initial user/session schema supports later authentication; token hashing/expiry enforcement and full account validation are phase 3 (architecture recommendation, implemented foundation; security behavior incomplete until that phase). A-18: disposable integration databases use a CREATEDB test role, never a production role (recommendation, implemented). A-19: lowercase/trim normalization across entire email with unique DB check (requirements + proposed normalization rule, implemented foundation; account behavior in phase 3). A-20: unversioned public health/readiness with typed success bodies and error envelopes, no redundant success envelope (recommendation, implemented). A-01 remains a proposed account-session strategy; schema support does not imply user approval or completed authentication.

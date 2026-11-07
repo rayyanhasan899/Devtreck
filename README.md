@@ -60,3 +60,9 @@ npm start
 Locks: apps/api/requirements.lock and apps/web/package-lock.json. CI mirrors checks on Linux. Local checks do not imply hosted CI success. Persistence/migrations arrive in phase 2; browser E2E in phase 6; production hosting/TLS/backups in phase 10. No production deployment yet.
 
 See docs/project-planning for prompts, docs/decisions for ADRs, docs/architecture for design and docs/phase-reports for evidence. Keep stable main and private origin; use focused commits on codex/ phase branches. Submit later phase prompts individually.
+
+## Phase 2 persistence foundation
+
+See [database setup/migrations](docs/database/foundation.md), [API/error contract](docs/api/conventions.md) and [phase 2 report](docs/phase-reports/PHASE-02-REPORT.md). API uses apps/api/.env DATABASE_URL; tests use apps/api/.env.test TEST_DATABASE_URL (examples in root .env.example). These local files are ignored. Integration tests require the separate test service and create/drop only random disposable databases.
+
+Run API with `--no-access-log` to keep query strings out of Uvicorn logs. GET /ready checks DB connectivity separately from /health liveness. Apply migrations explicitly; no automatic production migration or schema reset. Accounts are phase 3, not part of this foundation.
