@@ -1,5 +1,11 @@
 # Devtreck
 
+Current phase 6: open http://127.0.0.1:3000 to create an account, sign in, use your protected overview and edit Settings (profile, timezone, theme, email, password and confirmed deletion). Sign out is available on desktop/mobile. Task/habit APIs are available, while their browser screens arrive in phase 7.
+
+Web server-only API_ORIGIN defaults to http://127.0.0.1:8002. Set it before build and at runtime if changing API address; never use a public environment variable for secrets. Keep the API running, then build/start web with `npm run build` and `npm start` from apps/web. Browser /api requests use the same origin as the web page; ALLOWED_ORIGINS on API must include that exact web origin. Local defaults cover localhost:3000 and 127.0.0.1:3000. Production requires HTTPS and explicit origins.
+
+See [browser verification](docs/testing/browser-accounts.md) and [phase 6 decision](docs/decisions/ADR-0006-browser-accounts.md). Earlier phase descriptions below are historical milestones.
+
 Current phase 5: daily completions and streaks are available through the API at http://127.0.0.1:8002/docs. See [daily completion guide](docs/api/streaks.md) for current/best streaks, timezone rules, immutable history and reconciliation. Today excludes credited daily tasks; Daily keeps them visible. Browser habit screens remain phase 7. Earlier phase descriptions below are historical milestones.
 
 Phase 1 foundation: responsive Next.js landing page, FastAPI liveness, validated configuration, isolated PostgreSQL services and quality checks. Accounts and tasks are planned for later phases.

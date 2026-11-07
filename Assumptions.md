@@ -1,5 +1,9 @@
 # Devtreck assumptions register
 
+## Phase 6 updates
+
+A-02 device timezone suggestion now requires explicit Save in Settings; account default remains UTC. A-13 light/dark/system theme now persists in profile. A-32: same-origin Next rewrite to server-only API_ORIGIN, no browser persistent credential storage (recommendation, implemented). A-33: protected server profile checks plus client focus/navigation/minute revalidation catch session revocation (recommendation, implemented). A-34: native deletion confirmation dialog with current password and acknowledgment, only completed Overview/Settings navigation linked (recommendation, implemented). A-35: browser tests use random disposable PostgreSQL database and isolated ports 8010/3100 (recommendation, implemented).
+
 ## Phase 5 updates
 
 A-02 history/boundary rules implemented for configured IANA zones; browser suggestion remains phase 6. A-10 implemented: fresh UUID daily epochs, current reset on reactivation and lifetime best across separate runs without bridging. A-28: one local-day credit per task across epochs; older-epoch today credit remains visible but cannot start the new run (recommendation, implemented). A-29: westward-zone future-labeled facts retained, excluded from current run until their local day arrives; lifetime best/history retained (recommendation, implemented). A-30: global daily status pending after completion, separate today_completed occurrence metadata and dynamic views (recommendation, implemented). A-31: separate bounded one-time /history and all-epoch /daily-history; cache reconciliation derives from facts (recommendation, implemented).
