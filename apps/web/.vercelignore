@@ -8,3 +8,5 @@ release-tests
 .browser-services.log
 Dockerfile
 .dockerignore
+hosted-tests
+playwright.hosted.config.ts
