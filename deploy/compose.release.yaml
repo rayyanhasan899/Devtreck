@@ -1,0 +1,83 @@
+name: devtreck-release
+x-api: &api
+  image: devtreck-api:release
+  init: true
+  read_only: true
+  tmpfs: [/tmp]
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  stop_grace_period: 30s
+  logging:
+    driver: json-file
+    options: {max-size: 10m, max-file: "3"}
+services:
+  db:
+    restart: unless-stopped
+    image: postgres:18.6@sha256:e3d24f6906d0760bf4da0dae872415391ededefad23fd471c47dc53b0ddf3c42
+    environment:
+      POSTGRES_DB: devtreck_release
+      POSTGRES_USER: devtreck_owner
+      POSTGRES_PASSWORD: ${RELEASE_DB_PASSWORD:?Generate release environment first}
+      APP_DB_PASSWORD: ${RELEASE_APP_PASSWORD:?Generate release environment first}
+    volumes:
+      - release_db:/var/lib/postgresql
+      - ./init-app-role.sh:/docker-entrypoint-initdb.d/10-app-role.sh:ro
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U devtreck_owner -d devtreck_release"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    stop_grace_period: 30s
+  migrate:
+    <<: *api
+    environment:
+      DATABASE_URL: postgresql+psycopg://devtreck_owner:${RELEASE_DB_PASSWORD}@db:5432/devtreck_release
+    command: [alembic, upgrade, head]
+    healthcheck: {disable: true}
+    depends_on:
+      db: {condition: service_healthy}
+  api:
+    <<: *api
+    restart: unless-stopped
+    build: ../apps/api
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+      ALLOWED_ORIGINS: '["https://localhost:8443"]'
+      DATABASE_URL: postgresql+psycopg://devtreck_app:${RELEASE_APP_PASSWORD}@db:5432/devtreck_release
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+  web:
+    restart: unless-stopped
+    image: devtreck-web:release
+    build: ../apps/web
+    init: true
+    read_only: true
+    tmpfs: [/tmp, /app/.next/cache]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    environment:
+      API_ORIGIN: http://api:8000
+    depends_on:
+      api: {condition: service_healthy}
+    stop_grace_period: 30s
+  proxy:
+    restart: unless-stopped
+    image: caddy:2-alpine@sha256:78bd35025c7ba85961dd149ae670315129954e77abe2383ac47c89106b35ade9
+    ports: ["127.0.0.1:8443:8443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, wget, --no-check-certificate, -q, --spider, "https://localhost:8443/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    stop_grace_period: 30s
+volumes:
+  release_db:
+  caddy_data:
+  caddy_config:

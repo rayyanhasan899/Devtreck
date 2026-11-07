@@ -114,10 +114,12 @@ class ProgressRepository:
             .on_conflict_do_nothing()
         )
 
-    def occurrence(self, task: UUID, kind: str, day: date) -> None:
+    def record_occurrences(self, values: list[dict[str, object]]) -> None:
+        if not values:
+            return
         self.db.execute(
             insert(OccurrenceModel)
-            .values(task_id=task, user_id=self.owner, kind=kind, day=day)
+            .values([{**value, "user_id": self.owner} for value in values])
             .on_conflict_do_nothing()
         )
 

@@ -1,0 +1,41 @@
+{
+	admin off
+	auto_https disable_redirects
+	log {
+		format filter {
+			wrap json
+			fields {
+				request delete
+			}
+		}
+	}
+}
+
+https://localhost:8443 {
+	tls internal
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		Referrer-Policy same-origin
+		X-Frame-Options DENY
+		Content-Security-Policy "frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Strict-Transport-Security "max-age=31536000"
+	}
+	request_body {
+		max_size 128KB
+	}
+	@api path /api/* /health /ready
+	handle @api {
+		reverse_proxy api:8000 {
+			transport http {
+				keepalive off
+				dial_timeout 3s
+				response_header_timeout 30s
+			}
+		}
+	}
+	handle {
+		reverse_proxy web:3000
+	}
+}

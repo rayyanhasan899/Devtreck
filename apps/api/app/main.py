@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from starlette.middleware.base import RequestResponseEndpoint
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response
 
 from app.core.config import Settings
 from app.database.session import build_engine
@@ -61,8 +61,28 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def correlate(request: Request, call_next: RequestResponseEndpoint) -> Response:
         request.state.request_id = str(uuid4())
         started = perf_counter()
-        response = await call_next(request)
+        try:
+            response = await call_next(request)
+        except Exception as exc:  # noqa: BLE001 - outer boundary must sanitize unexpected failures
+            # Do not rethrow to Uvicorn: exception text/tracebacks can contain private input.
+            logging.getLogger("devtreck.requests").error(
+                json.dumps(
+                    {
+                        "event": "request_failed",
+                        "request_id": request.state.request_id,
+                        "error_type": type(exc).__name__,
+                    }
+                )
+            )
+            response = JSONResponse(
+                status_code=500,
+                content={
+                    "error": {"code": "internal_error", "message": "Unexpected server error"},
+                    "request_id": request.state.request_id,
+                },
+            )
         response.headers["X-Request-ID"] = request.state.request_id
+        response.headers["X-Content-Type-Options"] = "nosniff"
         if request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
         logging.getLogger("devtreck.requests").info(

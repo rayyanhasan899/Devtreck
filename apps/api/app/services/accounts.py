@@ -4,7 +4,7 @@ from datetime import UTC, datetime, timedelta
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.core.security import DUMMY_HASH, digest, hasher, verify
+from app.core.security import DUMMY_HASH, digest, hash_password, hasher, verify
 from app.domain.errors import ConflictError, UnauthorizedError
 from app.persistence.accounts import AccountsRepository
 from app.persistence.models import SessionModel, UserModel
@@ -24,7 +24,7 @@ class AccountsService:
             raise ConflictError() from None
 
     def register(self, name: str, email: str, password: str) -> UserModel:
-        user = UserModel(name=name, email=email.lower(), password_hash=hasher.hash(password))
+        user = UserModel(name=name, email=email.lower(), password_hash=hash_password(password))
         self.db.add(user)
         self.commit()
         return user
@@ -37,7 +37,7 @@ class AccountsService:
         if user is None or not valid:
             raise UnauthorizedError()
         if hasher.check_needs_rehash(user.password_hash):
-            user.password_hash = hasher.hash(password)
+            user.password_hash = hash_password(password)
         token = secrets.token_urlsafe(32)
         self.db.add(
             SessionModel(
@@ -79,7 +79,7 @@ class AccountsService:
 
     def change_password(self, user: UserModel, current: str, new: str) -> None:
         locked = self.reauthenticate(user, current)
-        locked.password_hash = hasher.hash(new)
+        locked.password_hash = hash_password(new)
         self.repo.revoke(locked.id)
         self.commit()
 

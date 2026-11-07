@@ -40,6 +40,7 @@ class ProgressService:
         last = covered[-1] if covered else None
         start = min(last.day, today) if last and last.time_zone == self.zone else today
         tasks = [row for row in self.repo.tasks() if row.deleted_at is None]
+        pending: list[dict[str, object]] = []
         # Materialize gaps before a schedule mutation, while the old schedule still applies.
         day = start
         while day <= today:
@@ -48,12 +49,16 @@ class ProgressService:
                 if row.task_type == "daily":
                     began = local_day(row.daily_started_at or row.created_at, self.zone)
                     if day >= began:
-                        self.repo.occurrence(row.id, "daily", day)
+                        pending.append({"task_id": row.id, "kind": "daily", "day": day})
                 else:
                     due = row.due_date or (local_day(row.due_at, self.zone) if row.due_at else None)
                     if due is not None and due <= day:
-                        self.repo.occurrence(row.id, "one_time", due)
+                        pending.append({"task_id": row.id, "kind": "one_time", "day": due})
+                if len(pending) >= 500:
+                    self.repo.record_occurrences(pending)
+                    pending.clear()
             day += timedelta(days=1)
+        self.repo.record_occurrences(pending)
 
     def sync(self) -> None:
         self.repo.db.flush()
