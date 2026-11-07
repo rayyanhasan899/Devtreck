@@ -1,20 +1,24 @@
-# $0 hosting decision and verified limits
+# $0 hosting decision and verified deployment
 
-Checked2026-11-07 against the official pages linked below. These are published plan facts, not evidence that a user account is provisioned or its billing safeguards are configured. Final user steering: **personal use only for now**. Earlier mention of business use was superseded; reconsider the frontend plan before any commercial use. The user installed the three integrations; the agent created no external account, project, paid resource, paid trial, domain or external database.
+Verified 2026-11-07. Final user authorization is personal/non-commercial use only, free subdomains, strict $0, and end-to-end deployment after secure sign-in. No paid resource, trial, upgrade, card entry or purchased domain was activated.
 
-## Preferred plan
+## Deployed choice
 
-| Layer | Choice | Verified constraints and decision |
+| Layer | Actual resource | Plan and constraints |
 |---|---|---|
-| Next frontend | Vercel Hobby + free vercel.app subdomain | Personal/non-commercial only. Free usage is capped rather than additional usage purchases; use no Pro trial/upgrade/add-on. Published included values include4CPU-hours,1million function invocations; request/SSR/proxy and build limits still apply. Suitable only while the latest personal-use decision holds. |
-| FastAPI | One Render Free Docker web service + onrender.com |750 workspace hours/month; idle sleep after15minutes, roughly one-minute wake, ephemeral filesystem, possible unannounced restarts.512MB published free web-service memory. No shell, one-off jobs, scaling or persistent disk. External DB traffic counts toward usage and may trigger suspension. No always-on/SLA claim. Render itself describes Free as hobby/testing, not production hosting. |
-| Database | Neon Free, PostgreSQL | Current live plan table lists100CU-hours/project/month, up to2CU autoscaling,1GB/project (20GB account total),5GB public transfer/project,10branches/project and100projects. Scale to zero after5minutes is mandatory.6-hour instant-restore window, up to1GB changes and1manual snapshot; no free uptime SLA. Start with one project/branch, conservative0.5GB operating ceiling. |
+| Next.js frontend | https://devtreck.vercel.app; project devtreck; Node24 | Vercel Hobby, team raan-899. Personal/non-commercial only; hard usage caps, no paid additional usage. |
+| FastAPI | https://devtreck-api.vercel.app; project devtreck-api; Python3.14; fra1 | Same Vercel Hobby allowance, not a second allowance. Function maxDuration60seconds; ephemeral instances, cold starts, no persistent process or local state guarantee. |
+| PostgreSQL18 | Neon Free project still-recipe-75029973; production branch br-misty-pond-ba8kkw7s; aws-eu-central-1 | Actual organization plan Free. Compute fixed0.25CU; project quotas set to80CU-hours,4GB transfer and500MB logical data. Six-hour restore history and one manual baseline snapshot. |
 
-Sources: [Vercel Hobby](https://vercel.com/docs/plans/hobby), [Vercel pricing](https://vercel.com/pricing), [Vercel limits](https://vercel.com/docs/limits), [Render Free](https://render.com/docs/free), [Render pricing](https://render.com/pricing), [Neon plans](https://neon.com/docs/introduction/plans).
+The initial Render Free backend was replaced with Vercel FastAPI after comparing the free alternatives and explaining the change. Render may bill bandwidth/build overages when a payment method exists; its public API did not expose sufficient billing safeguards to verify this account's zero-spend requirement. Vercel's officially supported FastAPI/Python3.14 runtime passed the actual hosted journey and keeps both apps within the verified Hobby plan. Render sign-in succeeded, but **no Render service/database/disk was created**. render.yaml remains an unused alternative, not the deployed topology.
 
-Neon's current live plan page differs from older cached0.5GB summaries; this decision uses its inspected live1GB table but keeps a0.5GB operating budget. Confirm the actual account console on connection. Exhausted Free compute/transfer suspends compute; storage growth can fail at caps without deleting data. No upgrade is authorized. Neon spending notifications are not on Free, so do not imply a hard-dollar control or alert was configured. Use its actual free hard limits and usage console. [Neon connection pooling](https://neon.com/docs/connect/connection-pooling) supports up to10,000 client connections but actual concurrent transactions/Postgres connections are compute-dependent; this app does not need10,000 connections. A direct TLS URL with the bounded application pool is the initial plan.
+Sources checked: [Vercel Hobby](https://vercel.com/docs/plans/hobby), [FastAPI on Vercel](https://vercel.com/docs/frameworks/backend/fastapi), [Python runtime](https://vercel.com/docs/functions/runtimes/python), [Vercel limits](https://vercel.com/docs/limits), [Render Free](https://render.com/docs/free), [Neon plans](https://neon.com/docs/introduction/plans).
 
-Render can bill bandwidth/build overages **when a payment method is present**. With no payment method, documented behavior is suspension/build disabling. Account access must verify no charge-capable workspace/payment configuration; set every available spend safeguard to0 and keep usage notifications enabled. If the account flow mandates a payment method or cannot guarantee the user's restrictions, external deployment stays BLOCKED. Vercel must remain Hobby; Neon must remain Free. Free means availability may stop at a cap, not unlimited hosting.
+## Cost and availability safeguards
+
+Keep Vercel Hobby and Neon Free; do not enable a Pro trial, paid compute, add-on or upgrade. Free quotas can suspend service instead of providing unlimited availability. Vercel resources share team quotas. The inspected Neon live plan table lists100CU-hours,1GB/project and5GB transfer; the configured project quotas are deliberately lower. No Free-plan dollar notification feature is claimed. Review provider usage before increasing traffic; no paid workaround is authorized.
+
+Neon documentation describes mandatory five-minute Free idle suspension, but the endpoint API returned suspend_timeout_seconds=0 and rejected an explicit300-second override under Free policy. Automatic idle suspension was therefore not independently demonstrated. The Free plan and explicit project compute quota remain the spending boundary; availability can stop at that quota. No keepalive scheduler was installed.
 
 ## Alternatives reviewed
 
@@ -23,10 +27,12 @@ Render can bill bandwidth/build overages **when a payment method is present**. W
 - **Fly.io** offers a limited free trial/credit rather than a verified indefinite zero-budget backend; not selected. [Official trial](https://docs.fly.io/about/free-trial/).
 - **Render free PostgreSQL** explicitly expires after30days; excluded as the long-term database. No paid Render database is authorized.
 
-## Compatibility and remaining evidence
+## Verified compatibility and security
 
-Vercel hosts Next directly; external rewrites preserve browser same-origin API/cookie paths. FastAPI uses the verified Python Docker image on Render; render.yaml explicitly selects Free and disables automatic deploys. SQLAlchemy/Alembic use standard PostgreSQL with bounded direct psycopg connections and explicit migrations. No local disk application state is required. Choose geographically close backend/database regions after access. This is a reasoned compatibility assessment, **not a hosted test result**. [Vercel rewrites](https://vercel.com/docs/rewrites), [Render blueprint](https://render.com/docs/blueprint-spec).
+Vercel's Next rewrite keeps browser API calls same-origin. API_ORIGIN is server-only and points to the backend alias. The backend has exact frontend ALLOWED_ORIGINS, production settings and an encrypted restricted-role DATABASE_URL. Direct PostgreSQL TLS uses verify-full, channel binding and an explicit certifi CA bundle; default system trust failed and was fixed without disabling certificate validation. SQLAlchemy's pool is5+5 per instance with pre-ping and10-second connection timeout. Serverless concurrency can multiply connections; this is sized for personal use, not a load-tested public service.
 
-Latest account evidence: all three integrations are confirmed installed. Neon organization access succeeds, its plan is Free, and its project list is empty. No Neon project was created because the overall deployment preflight remains blocked. Render workspace queries return an unknown-operation integration error; Vercel account operations are not exposed in this chat. Browser fallback fails during initialization. Installation is therefore confirmed, while operational Vercel/Render account/billing access is not. Refresh those existing connections in a working session; no reinstall or credentials in chat are needed.
+The fresh database was verified empty, initialized with47 Alembic-generated statements in one transaction, and verified at head8022c27c58ae. Runtime role devtreck_app cannot create roles/databases/schema objects. Startup does not run migrations. The user's subsequent end-to-end deployment instruction authorized this additive setup; future destructive migrations still require explicit approval.
 
-Exact subdomains/regions, Vercel/Render account quotas/billing, secret injection, Neon TLS/role/migration approval, Render-to-Neon latency and cold-start timeout behavior remain unverified. Follow the [runbook](RUNBOOK.md); the verified local HTTPS stack remains usable independently.
+Actual public readiness returned200. The hosted browser journey passed in23.3seconds: signup/login, Secure/HttpOnly/SameSiteStrict cookies, task/habit/checklist writes, focus pause/reload/stop,15XP, desktop/mobile, axe, anonymous401, Origin/CSRF403 and account deletion. A database read confirmed zero users after synthetic cleanup. See the [phase report](../phase-reports/PHASE-10-REPORT.md) and [runbook](RUNBOOK.md).
+
+A free manual snapshot snap-broad-dew-bazcsfaj captures the verified empty baseline. It is not an ongoing backup of future user data. Daily off-provider backup scheduling remains unconfigured; proposed24-hour RPO/60-minute RTO are not guarantees. No hosted CI, multi-browser/load test or always-on SLA is claimed.

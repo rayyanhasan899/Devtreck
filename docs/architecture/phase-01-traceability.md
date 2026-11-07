@@ -30,6 +30,6 @@ API references above are relative to apps/api/app; browser references to apps/we
 | NFR-01–08,10–16,18,20–21 | existing account/task/streak/productivity/progress tests and seven browser journeys; batch500 occurrence writes, strict transaction/source invariants, safe errors, centralized client and typed build |
 | NFR-09/17; blueprint42–43 | digest-pinned Docker packaging, restricted role/explicit migration, local Caddy HTTPS, full-row checksum restore drill, runbook/RPO/RTO/retention targets, CI release job and production HTTPS journey |
 | NFR-19 | local Chromium desktop/mobile widths and axe; no unrun Firefox/Safari or hosted matrix claimed |
-| External release / budget | docs/deployment/FREE-HOSTING.md: final personal-only Vercel+Render+Neon $0 decision and published limits; installed integrations, Neon Free read verified, Vercel/Render access/billing/live journey still BLOCKED |
+| External release / budget | docs/deployment/FREE-HOSTING.md: final personal-only Vercel Next+FastAPI and Neon $0 decision; actual Hobby/Free plans, restricted TLS role and encrypted secrets; hosted-tests/hosted.spec.ts passed signup/tasks/focus/XP/cookies/CSRF/account deletion; no Render resource |
 
 Full code/test paths and actual outcomes are recorded in PHASE-10-REPORT.md. No automatic production migration, external backup scheduler, paid resource or main merge is implied.
