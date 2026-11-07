@@ -11,6 +11,7 @@ from app.presentation.task_schemas import (
     CategoryInput,
     CategoryResponse,
     DailyHistoryResponse,
+    DashboardResponse,
     HistoryResponse,
     StreakResponse,
     TaskFilters,
@@ -165,3 +166,8 @@ def daily_history(
         DailyHistoryResponse.model_validate(row)
         for row in tasks.daily_history(task_id, limit, offset)
     ]
+
+
+@router.get("/dashboard", response_model=DashboardResponse)
+def dashboard(tasks: Tasks) -> DashboardResponse:
+    return DashboardResponse(**tasks.dashboard())

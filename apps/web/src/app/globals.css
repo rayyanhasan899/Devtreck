@@ -780,3 +780,359 @@ dialog button {
     --danger: #ffb4ab;
   }
 }
+
+/* Task workspace */
+textarea {
+  font: inherit;
+  resize: vertical;
+  max-width: 100%;
+  width: 100%;
+  padding: 12px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin-top: 7px;
+}
+textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.task-workspace {
+  max-width: 1400px;
+}
+.task-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.task-heading .muted {
+  font-size: 14px;
+}
+.task-heading .muted > span {
+  display: block;
+  font-size: 12px;
+}
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 28px 0;
+}
+.summary-grid > div {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.summary-grid span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.summary-grid strong {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 30px;
+  margin-top: 10px;
+  font-weight: 600;
+}
+.summary-grid small {
+  font-size: 12px;
+}
+.task-views {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 0 20px;
+}
+.task-views button {
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--muted);
+  font-size: 13px;
+  min-height: 42px;
+}
+.task-views button[aria-pressed="true"] {
+  background: var(--soft);
+  color: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.task-list-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+}
+.task-search {
+  display: flex;
+  gap: 14px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+.task-search label {
+  flex: 1;
+  min-width: 160px;
+  margin: 0;
+}
+.task-search button {
+  margin-bottom: 0;
+}
+.task-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0 14px;
+  border-bottom: 1px solid var(--line);
+  padding: 6px 0 14px;
+  margin-bottom: 16px;
+}
+.task-filters label {
+  font-size: 12px;
+}
+.task-filters select,
+.task-filters input {
+  font-size: 13px;
+  min-width: 0;
+}
+.task-row {
+  padding: 22px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid var(--line);
+  align-items: center;
+}
+.task-row-main {
+  min-width: 0;
+  flex: 1;
+}
+.task-title {
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  padding: 3px 0;
+  font-size: 16px;
+  text-align: left;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.task-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.priority {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 2px 6px;
+}
+.priority-high {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.row-streak {
+  font-size: 12px;
+  color: var(--accent);
+  margin: 10px 0 0;
+}
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.task-actions button {
+  font-size: 12px;
+  min-height: 38px;
+  padding: 8px 12px;
+}
+.danger-text {
+  color: var(--danger);
+}
+.result-count {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 20px 0;
+}
+.task-empty,
+.task-loading {
+  padding: 40px 12px;
+  text-align: center;
+}
+.task-empty h2 {
+  font-size: 23px;
+  letter-spacing: -0.5px;
+}
+.task-empty p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  margin: 20px 0 0;
+}
+.pagination button {
+  min-height: 40px;
+  font-size: 12px;
+}
+.editor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+.dialog-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.dialog-heading h2 {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+dialog {
+  max-width: 660px;
+  max-height: 90vh;
+}
+.task-description {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.streak-banner {
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  border-radius: 10px;
+  line-height: 1.8;
+}
+.history-list {
+  padding-left: 20px;
+  font-size: 13px;
+}
+.history-list li {
+  margin: 14px 0;
+  line-height: 1.7;
+}
+.category-list {
+  padding: 0;
+  list-style: none;
+}
+.category-list li {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+}
+.category-list span:first-child {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.task-views button:hover,
+.task-title:hover {
+  color: var(--accent);
+}
+@media (max-width: 1100px) {
+  .task-row {
+    align-items: start;
+    flex-direction: column;
+  }
+  .task-actions {
+    justify-content: flex-start;
+  }
+  .summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  .sidebar nav {
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .sidebar nav a {
+    font-size: 12px;
+    padding: 9px 12px;
+  }
+  .task-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .task-workspace {
+    padding: 28px 16px;
+  }
+  .task-filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .task-list-panel {
+    padding: 18px;
+  }
+  .summary-grid {
+    gap: 10px;
+  }
+  .summary-grid > div {
+    padding: 16px;
+  }
+  .summary-grid span {
+    font-size: 11px;
+  }
+  .task-views button {
+    font-size: 12px;
+    padding: 9px 10px;
+  }
+  .editor-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .task-actions button {
+    min-height: 42px;
+  }
+  .task-search .text-button {
+    padding: 12px 0;
+  }
+  .task-filters input,
+  .task-filters select,
+  textarea,
+  input,
+  select {
+    font-size: 16px;
+  }
+}
+
+.filters-disclosure {
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.filters-disclosure summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--accent);
+  padding: 8px 0;
+  font-weight: 600;
+}
+.filters-disclosure summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}

@@ -142,3 +142,11 @@ class TaskFilters(BaseModel):
     descending: bool = True
     limit: int = Field(default=25, ge=1, le=100)
     offset: int = Field(default=0, ge=0, le=10000)
+
+
+class DashboardResponse(BaseModel):
+    today_actionable: int
+    outstanding: int
+    completions_today: int
+    daily_total: int
+    daily_done: int

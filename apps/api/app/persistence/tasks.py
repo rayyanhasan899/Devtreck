@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from datetime import date, datetime
+from datetime import UTC, date, datetime, time, timedelta
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
@@ -236,3 +236,62 @@ class TasksRepository:
             .offset(query.offset)
         ).all()
         return rows, total
+
+    def dashboard(self, zone: str, now: datetime) -> dict[str, int]:
+        today = now.astimezone(ZoneInfo(zone)).date()
+        start = datetime.combine(today, time.min, ZoneInfo(zone)).astimezone(UTC)
+        end = datetime.combine(today + timedelta(days=1), time.min, ZoneInfo(zone)).astimezone(UTC)
+        _, actionable = self.list(TaskQuery(view="today", limit=1), zone, now)
+        _, pending = self.list(TaskQuery(status="pending", limit=1), zone, now)
+        _, progressing = self.list(TaskQuery(status="in-progress", limit=1), zone, now)
+        common = (TaskModel.user_id == self.owner, TaskModel.deleted_at.is_(None))
+        one_time = (
+            self.session.scalar(
+                select(func.count())
+                .select_from(CompletionModel)
+                .join(TaskModel, CompletionModel.task_id == TaskModel.id)
+                .where(
+                    *common,
+                    CompletionModel.completed_at >= start,
+                    CompletionModel.completed_at < end,
+                )
+            )
+            or 0
+        )
+        daily = (
+            self.session.scalar(
+                select(func.count())
+                .select_from(DailyCompletionModel)
+                .join(TaskModel, DailyCompletionModel.task_id == TaskModel.id)
+                .where(*common, DailyCompletionModel.completion_day == today)
+            )
+            or 0
+        )
+        habits = (
+            self.session.scalar(
+                select(func.count())
+                .select_from(TaskModel)
+                .where(*common, TaskModel.task_type == "daily")
+            )
+            or 0
+        )
+        habits_done = (
+            self.session.scalar(
+                select(func.count())
+                .select_from(DailyCompletionModel)
+                .join(TaskModel, DailyCompletionModel.task_id == TaskModel.id)
+                .where(
+                    *common,
+                    TaskModel.task_type == "daily",
+                    DailyCompletionModel.completion_day == today,
+                )
+            )
+            or 0
+        )
+        return {
+            "today_actionable": actionable,
+            "outstanding": pending + progressing,
+            "completions_today": one_time + daily,
+            "daily_total": habits,
+            "daily_done": habits_done,
+        }

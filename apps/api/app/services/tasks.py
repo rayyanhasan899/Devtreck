@@ -163,3 +163,6 @@ class TasksService:
     def delete_category(self, category_id: UUID) -> None:
         self.repo.delete_category(self.repo.category(category_id))
         self.commit()
+
+    def dashboard(self) -> dict[str, int]:
+        return self.repo.dashboard(self.zone, self.clock())

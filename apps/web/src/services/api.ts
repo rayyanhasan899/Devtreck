@@ -64,7 +64,12 @@ export async function api<T>(
           ? "Your current password is incorrect, or your session has expired."
           : "Email or password is incorrect.",
         403: "This request could not be verified. Refresh and try again.",
-        409: "That email is already in use. Please choose another.",
+        404: "This item is unavailable or no longer belongs to your account.",
+        409: path.startsWith("/categories")
+          ? "A category with this name already exists."
+          : path.startsWith("/tasks")
+            ? "This change conflicts with the saved task. Refresh and try again."
+            : "That email is already in use. Please choose another.",
         422: "Please check the highlighted fields.",
         429: "Too many attempts. Please wait a few minutes and try again.",
       };

@@ -61,7 +61,19 @@ export function AppShell({
         <p className="nav-caption">YOUR WORKSPACE</p>
         <nav aria-label="Main navigation">
           <Link href="/app" aria-current={path === "/app" ? "page" : undefined}>
-            Overview
+            Today
+          </Link>
+          <Link
+            href="/app/tasks"
+            aria-current={path === "/app/tasks" ? "page" : undefined}
+          >
+            All tasks
+          </Link>
+          <Link
+            href="/app/daily"
+            aria-current={path === "/app/daily" ? "page" : undefined}
+          >
+            Daily habits
           </Link>
           <Link
             href="/app/settings"
