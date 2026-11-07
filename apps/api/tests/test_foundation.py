@@ -24,7 +24,22 @@ def test_unknown_environment_is_rejected() -> None:
 
 
 def test_production_hides_schema() -> None:
-    with TestClient(create_app(Settings(app_env="production"))) as client:
+    with TestClient(
+        create_app(
+            Settings(app_env="production", database_url="postgresql+psycopg://unused/unused")
+        )
+    ) as client:
         assert client.get("/docs").status_code == 404
         assert client.get("/openapi.json").status_code == 404
         assert client.get("/health").status_code == 200
+
+
+def test_database_config_rejects_wrong_driver_and_hides_secret() -> None:
+    with pytest.raises(ValidationError) as error:
+        Settings(database_url="sqlite://synthetic-secret")
+    assert "synthetic-secret" not in str(error.value)
+
+
+def test_production_requires_database() -> None:
+    with pytest.raises(ValidationError):
+        Settings(app_env="production", database_url=None)

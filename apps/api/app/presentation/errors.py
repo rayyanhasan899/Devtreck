@@ -1,0 +1,68 @@
+import json
+import logging
+from uuid import uuid4
+
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from sqlalchemy.exc import SQLAlchemyError
+from starlette.exceptions import HTTPException
+
+from app.domain.errors import ApplicationError, ConflictError, NotFoundError
+
+
+class ErrorDetail(BaseModel):
+    code: str
+    message: str
+
+
+class ErrorResponse(BaseModel):
+    error: ErrorDetail
+    request_id: str
+
+
+logger = logging.getLogger("devtreck.requests")
+
+
+def install_errors(app: FastAPI) -> None:
+    def response(request: Request, status: int, code: str, message: str) -> JSONResponse:
+        request_id = getattr(request.state, "request_id", str(uuid4()))
+        return JSONResponse(
+            status_code=status,
+            content={"error": {"code": code, "message": message}, "request_id": request_id},
+            headers={"X-Request-ID": request_id},
+        )
+
+    @app.exception_handler(ApplicationError)
+    async def application_error(request: Request, exc: ApplicationError) -> JSONResponse:
+        if isinstance(exc, NotFoundError):
+            return response(request, 404, "not_found", "Resource not found")
+        if isinstance(exc, ConflictError):
+            return response(request, 409, "conflict", "Operation conflicts with current state")
+        return response(request, 503, "unavailable", "Service temporarily unavailable")
+
+    @app.exception_handler(SQLAlchemyError)
+    async def database_error(request: Request, exc: SQLAlchemyError) -> JSONResponse:
+        return response(request, 503, "unavailable", "Service temporarily unavailable")
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
+        return response(request, 422, "validation_error", "Invalid request data")
+
+    @app.exception_handler(HTTPException)
+    async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
+        return response(request, exc.status_code, "http_error", "Request could not be completed")
+
+    @app.exception_handler(Exception)
+    async def unexpected_error(request: Request, exc: Exception) -> JSONResponse:
+        logger.error(
+            json.dumps(
+                {
+                    "event": "request_failed",
+                    "request_id": getattr(request.state, "request_id", "unknown"),
+                    "error_type": type(exc).__name__,
+                }
+            ),
+        )
+        return response(request, 500, "internal_error", "Unexpected server error")
