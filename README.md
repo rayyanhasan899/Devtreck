@@ -70,3 +70,7 @@ Run API with `--no-access-log` to keep query strings out of Uvicorn logs. GET /r
 ## Phase 3: usable account APIs
 
 Registration, login/logout, profile/timezone/theme and email updates, password change and confirmed account deletion are now available through the API. See [account API guide](docs/api/accounts.md) for headers, cookie/CSRF usage and startup on port 8002. Browser account screens are still phase 6; the web currently remains a welcome page.
+
+## Phase 4: usable task/category APIs
+
+Create, read, update, archive, search, filter and sort private tasks; complete/reopen one-time tasks and view preserved history. Manage custom categories without deleting their tasks. API docs remain http://127.0.0.1:8002/docs after restarting the API. [Task API guide](docs/api/tasks.md) documents fields, cookie/CSRF headers, list views and confirmations. Daily tasks can be created, but completion/streaks arrive in phase 5. Browser task screens arrive in phase 7.
