@@ -76,6 +76,18 @@ export function AppShell({
             Daily habits
           </Link>
           <Link
+            href="/app/plan"
+            aria-current={path === "/app/plan" ? "page" : undefined}
+          >
+            Daily plan
+          </Link>
+          <Link
+            href="/app/focus"
+            aria-current={path === "/app/focus" ? "page" : undefined}
+          >
+            Focus
+          </Link>
+          <Link
             href="/app/settings"
             aria-current={path === "/app/settings" ? "page" : undefined}
           >

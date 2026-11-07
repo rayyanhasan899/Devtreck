@@ -93,6 +93,8 @@ class TaskResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     streak: StreakResponse | None = None
+    checklist_total: int = 0
+    checklist_completed: int = 0
 
 
 class TaskPage(BaseModel):

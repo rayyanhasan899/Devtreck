@@ -47,6 +47,9 @@ Tasks = Annotated[TasksService, Depends(service)]
 
 def render(tasks: TasksService, row: TaskModel) -> TaskResponse:
     result = TaskResponse.model_validate(row)
+    result.checklist_total, result.checklist_completed = tasks.repo.checklist_progress(
+        [row.id]
+    ).get(row.id, (0, 0))
     if row.task_type == "daily":
         result.streak = StreakResponse.model_validate(tasks.streak(row))
     return result
@@ -61,9 +64,11 @@ def create(payload: TaskInput, tasks: Tasks) -> TaskResponse:
 def listing(filters: Annotated[TaskFilters, Query()], tasks: Tasks) -> TaskPage:
     rows, total = tasks.list(TaskQuery(**filters.model_dump()))
     summaries = tasks.streaks(rows)
+    progress = tasks.repo.checklist_progress([row.id for row in rows])
     items = []
     for row in rows:
         item = TaskResponse.model_validate(row)
+        item.checklist_total, item.checklist_completed = progress.get(row.id, (0, 0))
         if row.task_type == "daily":
             item.streak = StreakResponse.model_validate(summaries[row.id])
         items.append(item)

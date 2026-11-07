@@ -1136,3 +1136,114 @@ dialog {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
+
+.plan-items,
+.checklist ul,
+.focus-history {
+  list-style: none;
+  padding: 0;
+}
+.plan-items > li,
+.checklist li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+.plan-items strong,
+.checklist label {
+  overflow-wrap: anywhere;
+}
+.mini-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.mini-actions button {
+  font-size: 12px;
+  min-height: 38px;
+  padding: 8px 10px;
+}
+.checklist {
+  border-top: 1px solid var(--line);
+  margin-top: 28px;
+  padding-top: 8px;
+}
+.checklist h3 small {
+  display: inline;
+  margin-left: 12px;
+}
+.checklist .checkbox {
+  margin: 0;
+  flex: 1;
+}
+.checklist .muted {
+  font-size: 12px;
+}
+.focus-card {
+  max-width: 660px;
+}
+.timer {
+  font-size: clamp(60px, 10vw, 96px);
+  letter-spacing: -4px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  padding: 24px 0;
+}
+.focus-card > p {
+  text-align: center;
+}
+.focus-history li {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.focus-history li > span {
+  display: block;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.daily-plan p {
+  line-height: 1.8;
+  font-size: 14px;
+}
+.daily-plan .dialog-heading a {
+  font-size: 12px;
+}
+.plan-items li > div:first-child {
+  min-width: 0;
+  flex: 1;
+}
+.daily-plan .mini-actions .primary,
+.daily-plan .mini-actions .secondary {
+  font-size: 12px;
+}
+details > summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+}
+details > summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+@media (max-width: 700px) {
+  .plan-items > li,
+  .checklist li {
+    align-items: start;
+    flex-direction: column;
+  }
+  .daily-plan .dialog-heading {
+    flex-direction: column;
+  }
+  .workspace .sidebar nav a {
+    font-size: 12px;
+  }
+  .focus-card {
+    padding: 24px;
+  }
+}

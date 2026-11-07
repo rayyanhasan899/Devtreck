@@ -10,6 +10,7 @@ from app.domain.errors import NotFoundError
 from app.domain.tasks import TaskQuery
 from app.persistence.models import (
     CategoryModel,
+    ChecklistModel,
     CompletionModel,
     DailyCompletionModel,
     TaskModel,
@@ -295,3 +296,15 @@ class TasksRepository:
             "daily_total": habits,
             "daily_done": habits_done,
         }
+
+    def checklist_progress(self, ids: Sequence[UUID]) -> dict[UUID, tuple[int, int]]:
+        rows = self.session.execute(
+            select(
+                ChecklistModel.task_id,
+                func.count(),
+                func.count().filter(ChecklistModel.completed.is_(True)),
+            )
+            .where(ChecklistModel.user_id == self.owner, ChecklistModel.task_id.in_(ids))
+            .group_by(ChecklistModel.task_id)
+        ).all()
+        return {row[0]: (row[1], row[2]) for row in rows}

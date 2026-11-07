@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { Checklist } from "./checklist";
 import { api, ApiError } from "@/services/api";
 import { dateLabel, type Task, type History } from "./types";
 export function TaskDetail({
@@ -66,6 +67,7 @@ export function TaskDetail({
       <button className="secondary" onClick={onEdit}>
         Edit this task
       </button>
+      <Checklist taskId={task.id} />
       <h3>Completion history</h3>
       {error && <p role="alert">{error}</p>}
       {!history && !error && <p role="status">Loading history…</p>}

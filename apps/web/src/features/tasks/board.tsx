@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/services/api";
+import { DailyPlan } from "./plan";
 import { TaskEditor } from "./editor";
 import { TaskDetail } from "./detail";
 import {
@@ -232,6 +233,12 @@ export function TaskBoard({
             </strong>
           </div>
         </section>
+      )}
+      {view === "today" && (
+        <details className="settings-card">
+          <summary>Plan your day</summary>
+          <DailyPlan key={tick} />
+        </details>
       )}
       <nav className="task-views" aria-label="Task views">
         {views.map((item) => (
@@ -472,6 +479,12 @@ export function TaskBoard({
                           <span>~{task.estimated_minutes} min</span>
                         )}
                       </div>
+                      {task.checklist_total > 0 && (
+                        <p className="row-streak">
+                          Checklist: {task.checklist_completed} of{" "}
+                          {task.checklist_total} complete
+                        </p>
+                      )}
                       {task.streak && (
                         <p className="row-streak">
                           Current streak {task.streak.current_streak} · Best{" "}
@@ -570,7 +583,10 @@ export function TaskBoard({
       <dialog
         ref={details}
         aria-labelledby="detail-title"
-        onClose={() => setDetail(null)}
+        onClose={() => {
+          setDetail(null);
+          reload();
+        }}
       >
         <div className="dialog-heading">
           <h2 id="detail-title">{detail?.title}</h2>

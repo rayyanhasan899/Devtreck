@@ -9,6 +9,8 @@ export type Streak = {
 };
 export type Task = {
   id: string;
+  checklist_total: number;
+  checklist_completed: number;
   title: string;
   description: string | null;
   status: "pending" | "in-progress" | "completed";

@@ -2,9 +2,11 @@ from datetime import date, datetime
 from uuid import UUID, uuid4
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Date,
     DateTime,
+    Float,
     ForeignKey,
     ForeignKeyConstraint,
     Index,
@@ -12,7 +14,9 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     func,
+    text,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database.base import Base
@@ -169,3 +173,111 @@ class DailyCompletionModel(Base):
     completion_day: Mapped[date] = mapped_column(Date)
     time_zone: Mapped[str] = mapped_column(String(100))
     completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class DailyPlanModel(Base):
+    __tablename__ = "daily_plans"
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    order_ids: Mapped[list[str]] = mapped_column(JSONB, default=list)
+    priority_ids: Mapped[list[str]] = mapped_column(JSONB, default=list)
+
+
+class ChecklistModel(Base):
+    __tablename__ = "checklist_items"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["task_id", "user_id"], ["tasks.id", "tasks.user_id"], ondelete="CASCADE"
+        ),
+        UniqueConstraint(
+            "task_id",
+            "position",
+            name="uq_checklist_position",
+            deferrable=True,
+            initially="DEFERRED",
+        ),
+        CheckConstraint("position >= 0", name="position_nonnegative"),
+        CheckConstraint("length(btrim(title)) > 0", name="title_required"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    task_id: Mapped[UUID] = mapped_column()
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    title: Mapped[str] = mapped_column(String(200))
+    completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    position: Mapped[int] = mapped_column(Integer)
+
+
+class FocusSessionModel(Base):
+    __tablename__ = "focus_sessions"
+    __table_args__ = (
+        UniqueConstraint("id", "user_id"),
+        ForeignKeyConstraint(
+            ["task_id", "user_id"],
+            ["tasks.id", "tasks.user_id"],
+            name="fk_focus_task_owner",
+            deferrable=True,
+            initially="DEFERRED",
+        ),
+        Index(
+            "uq_focus_running_user",
+            "user_id",
+            unique=True,
+            postgresql_where=text("status IN ('active','paused')"),
+        ),
+        Index("ix_focus_owner_started", "user_id", "started_at"),
+        CheckConstraint("status IN ('active','paused','completed','stopped')", name="status_valid"),
+        CheckConstraint("kind IN ('focus','break')", name="kind_valid"),
+        CheckConstraint(
+            "target_seconds BETWEEN 60 AND 10800 AND elapsed_seconds >= 0 AND elapsed_seconds <= target_seconds",
+            name="duration_valid",
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    task_id: Mapped[UUID | None] = mapped_column(ForeignKey("tasks.id", ondelete="SET NULL"))
+    kind: Mapped[str] = mapped_column(String(10))
+    status: Mapped[str] = mapped_column(String(12), default="active")
+    target_seconds: Mapped[int] = mapped_column(Integer)
+    elapsed_seconds: Mapped[float] = mapped_column(Float, default=0)
+    active_since: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class FocusEventModel(Base):
+    __tablename__ = "focus_events"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["session_id", "user_id"],
+            ["focus_sessions.id", "focus_sessions.user_id"],
+            ondelete="CASCADE",
+        ),
+        UniqueConstraint("user_id", "command_key"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    session_id: Mapped[UUID] = mapped_column()
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    command_key: Mapped[UUID] = mapped_column()
+    action: Mapped[str] = mapped_column(String(10))
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class FocusIntervalModel(Base):
+    __tablename__ = "focus_intervals"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["session_id", "user_id"],
+            ["focus_sessions.id", "focus_sessions.user_id"],
+            ondelete="CASCADE",
+        ),
+        CheckConstraint("ended_at >= started_at", name="interval_valid"),
+        Index("ix_focus_intervals_owner_start", "user_id", "started_at"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    session_id: Mapped[UUID] = mapped_column()
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    ended_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
