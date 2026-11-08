@@ -280,8 +280,8 @@ export function Settings({ profile }: { profile: Profile }) {
                 name="new_password"
                 type="password"
                 label="New password"
-                minLength={12}
-                hint="Use 12–128 characters. Spaces and passphrases are welcome."
+                minLength={8}
+                hint="Use 8–128 characters. Spaces and passphrases are welcome."
               />
             </AccountForm>
           </section>

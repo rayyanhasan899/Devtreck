@@ -11,3 +11,5 @@ Database fixed-window throttling commits attempt counters independently of accou
 Alternatives: browser bearer-token storage increases exposure; JWT-only revocation complicates password/account deletion; Redis introduces another service. Consequences: server lookup per request, CSRF-aware client and same-origin production routing. No password recovery or verification email until real delivery is scoped.
 
 Compatibility: argon2-cffi 25.1.0 and email-validator 2.3.0 installed/pinned; official Argon2 how-to checked: https://argon2-cffi.readthedocs.io/en/stable/howto.html. Dependencies verified through actual installs, imports and tests.
+
+Update2026-11-08: the user explicitly approved committing their8-character minimum edits. Current API and browser registration/password-change policy is8–128characters; all other authentication decisions above remain unchanged.

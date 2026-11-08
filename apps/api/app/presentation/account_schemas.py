@@ -22,7 +22,7 @@ class Login(Input):
 
 class Register(Login):
     name: str = Field(min_length=1, max_length=120)
-    password: str = Field(min_length=12, max_length=128)
+    password: str = Field(min_length=8, max_length=128)
 
     @field_validator("name")
     @classmethod
@@ -64,7 +64,7 @@ class ProfilePatch(Input):
 
 class PasswordChange(Input):
     current_password: str = Field(min_length=1, max_length=128)
-    new_password: str = Field(min_length=12, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
 
 
 class DeleteAccount(Input):

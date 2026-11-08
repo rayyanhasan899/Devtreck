@@ -107,7 +107,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
               name="password"
               aria-label="Password"
               autoComplete={register ? "new-password" : "current-password"}
-              minLength={register ? 12 : undefined}
+              minLength={register ? 8 : undefined}
               maxLength={128}
               required
               aria-invalid={invalid("password")}
@@ -115,7 +115,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
             />
             {register && (
               <small id="password-hint">
-                Use 12–128 characters. A memorable passphrase works well.
+                Use 8–128 characters. A memorable passphrase works well.
               </small>
             )}
           </label>

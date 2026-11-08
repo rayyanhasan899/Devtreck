@@ -78,3 +78,9 @@ Optional notifications/password recovery/custom recurrence remain deferred as in
 Branch codex/phase-10 contains focused commits3d0e052 (hardening/packaging),6b2116b (tests),659de16 (initial local handover),d5cf9e0 (Vercel deployment),24e99d9 (TLS trust fix), followed by hosted verification/final handover. Clean deployment worktree uses codex/deploy-personal-free. No push, PR, main/develop merge, history rewrite, remote change or visibility change. Three pre-existing password-policy files remain unstaged and excluded. Local app remains http://127.0.0.1:3000 and local production proof https://localhost:8443.
 
 Usable online: account/profile/settings, tasks/categories/search/filter/history, daily habits and streaks, plans/priorities, checklists, persistent focus sessions, XP/levels/achievements and progress insights. User action: open https://devtreck.vercel.app and create a personal account. Phase10 ends here with the above operational limitations documented.
+
+## November 8 source publication
+
+User authorized committing the previously preserved password-minimum edits (8–128characters, API and both browser forms) and pushing the final application to main. Source policy documentation is updated; earlier phase evidence above describes the November7 deployment. GitHub and live deployment are separate: this publication does not redeploy Vercel. Root AGENTS.md records the request to commit and push verified milestones alongside future work.
+
+Publication verification: API account integration tests8passed in5.51seconds; Ruff passed; registration/change boundary checks accepted8/128 and rejected7/129. Web lint, typecheck and production build passed. The first account test attempt waited on the stopped test database after a host restart; started only the existing disposable db-test service and reran successfully. No application database reset was performed.
